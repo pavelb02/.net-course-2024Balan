@@ -9,17 +9,28 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Application", "Application"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Tools", "Tools", "{BCDD88E8-992E-4798-A26E-12FB1F55E5A5}"
 EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Domain", "Domain", "{B6D2A4F1-0BEC-44A4-92D6-8012DF26CA5B}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BankSystem.Domain", "BankSystem.Domain\BankSystem.Domain.csproj", "{8DEAF01B-17EB-452D-973C-871941567F7B}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
 		Release|Any CPU = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{8DEAF01B-17EB-452D-973C-871941567F7B}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{8DEAF01B-17EB-452D-973C-871941567F7B}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{8DEAF01B-17EB-452D-973C-871941567F7B}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{8DEAF01B-17EB-452D-973C-871941567F7B}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {0097849E-39FC-49C1-B05C-98D472240A58}
+	EndGlobalSection
+	GlobalSection(NestedProjects) = preSolution
+		{8DEAF01B-17EB-452D-973C-871941567F7B} = {B6D2A4F1-0BEC-44A4-92D6-8012DF26CA5B}
 	EndGlobalSection
 EndGlobal
