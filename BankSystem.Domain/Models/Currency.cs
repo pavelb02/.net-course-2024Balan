@@ -7,7 +7,7 @@ public struct Currency
     public string Code { get; set; } // Код валюты (USD, EUR, RUB)
     public string Name { get; set; } // Название валюты (доллар США, евро, российский рубль)
     public string Symbol { get; set; } // Символ валюты ($, €, ₽)
-    public decimal ExchangeRate { get; set; } // Курс валюты
+    public decimal ExchangeRate { get; set; } // Стоимость валюты
 
     public Currency(string code, string name, string symbol, decimal exchangeRate)
     {
@@ -16,8 +16,9 @@ public struct Currency
         Symbol = symbol;
         ExchangeRate = exchangeRate;
     }
-    public void Print() => Console.WriteLine($"Код валюты: {Code}, " +
-                                             $"Название валюты: {Name}, " +
-                                             $"Символ валюты: {Symbol}, " +
-                                             $"Курс валюты: {ExchangeRate}");
+    // Переопределение метода ToString
+    public override string ToString()
+    {
+        return $"Код валюты: {Code}, Название валюты: {Name}, Символ валюты: {Symbol}, Стоимость валюты: {ExchangeRate}";
+    }
 }
