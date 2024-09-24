@@ -1,4 +1,5 @@
-﻿using BankSystem.App.Services;
+﻿using System.Diagnostics;
+using BankSystem.App.Services;
 using BankSystem.Domain.Models;
 
 namespace Practice;
@@ -7,6 +8,7 @@ class Program
 {
     static void Main()
     {
+        // Практическое задание 
         // 1 part
         Employee employee1 = new ("Ivan", "Ivanov", "TY563156", 25,"7894561230", "Manager", DateTime.Now, 5000);
         
@@ -57,6 +59,57 @@ class Program
         Console.WriteLine(clientBank.ToString());
         var employeeBank = bankService.ChangeClientToEmployee(clientBank, 2500);
         Console.WriteLine(employeeBank.ToString());
+
+        // Практическое задание List_Dictionary
+        var testDataGenerator = new TestDataGenerator();
+        var clientsBankList = testDataGenerator.GenerateClientsBankList(1000);
+        Console.WriteLine("\n" + clientsBankList.Count + " клиентов банка");
+
+        var clientsBankDictionary = testDataGenerator.GenerateClientsBankDictionary(clientsBankList);
+        
+        string[] positions = { "Cashier", "Service Specialist", "Counselor", "Manager", "Bank Accountant", "Financial Analyst", "Auditor", "IT specialist" };
+        var employeesBankList = testDataGenerator.GenerateEmployeesBankList(1000, positions);
+        Console.WriteLine(employeesBankList.Count + " сотрудников банка");
+
+        var random = new Random();
+        var randomClient = clientsBankList[random.Next(clientsBankList.Count)];
+        var sw = new Stopwatch();
+        sw.Start();
+        var foundListClientPhone = clientsBankList.Find(client => client.Phone == randomClient.Phone);
+        sw.Stop();
+        Console.WriteLine($"\nВремя поиска по номеру телефона: \n{sw.Elapsed} List");
+        
+        sw.Restart();
+        var foundDictionaryClientPhone = clientsBankDictionary[randomClient.Phone];
+        sw.Stop();
+        Console.WriteLine($"{sw.Elapsed} Dictionary");
+        
+        //sw.Restart();
+        var foundListClientAge = clientsBankList.Where(client => client.Age < 35).ToList();
+        //sw.Stop();
+        //Console.WriteLine($"\nВремя выборки по возрасту: \n{sw.Elapsed} List");
+        
+        //sw.Restart();
+        var foundDictionaryClientAge = clientsBankDictionary.Where(client => client.Value.Age < 35).ToList();
+        //sw.Stop();
+        //Console.WriteLine($"{sw.Elapsed} Dictionary");
+        
+        //sw.Restart();
+        var foundListEmployeeMinSalary = employeesBankList.MinBy(employee => employee.Salary);
+        //sw.Stop();
+        //Console.WriteLine($"\nВремя поиска сотрудника с минимальной зарплатой: \n{sw.Elapsed} List");
+        
+        sw.Restart();
+        var foundDictionaryLastOrDefault = clientsBankDictionary.LastOrDefault().Value;
+        sw.Stop();
+        Console.WriteLine($"\nПоиск в Dictionary: \n{sw.Elapsed} LastOrDefault");
+
+        var lastKey = clientsBankDictionary.Last().Key;
+        sw.Restart();
+        var foundDictionaryKey = clientsBankDictionary[lastKey];
+        sw.Stop();
+        Console.WriteLine($"{sw.Elapsed} Key");
+        
         Console.ReadKey();
     }
 
