@@ -84,29 +84,28 @@ class Program
         sw.Stop();
         Console.WriteLine($"{sw.Elapsed} Dictionary");
         
-        //sw.Restart();
+        sw.Restart();
         var foundListClientAge = clientsBankList.Where(client => client.Age < 35).ToList();
-        //sw.Stop();
-        //Console.WriteLine($"\nВремя выборки по возрасту: \n{sw.Elapsed} List");
-        
-        //sw.Restart();
-        var foundDictionaryClientAge = clientsBankDictionary.Where(client => client.Value.Age < 35).ToList();
-        //sw.Stop();
-        //Console.WriteLine($"{sw.Elapsed} Dictionary");
-        
-        //sw.Restart();
-        var foundListEmployeeMinSalary = employeesBankList.MinBy(employee => employee.Salary);
-        //sw.Stop();
-        //Console.WriteLine($"\nВремя поиска сотрудника с минимальной зарплатой: \n{sw.Elapsed} List");
+        sw.Stop();
+        Console.WriteLine($"\nВремя выборки по возрасту: \n{sw.Elapsed} List");
         
         sw.Restart();
-        var foundDictionaryLastOrDefault = clientsBankDictionary.LastOrDefault().Value;
+        var foundDictionaryClientAge = clientsBankDictionary.Where(client => client.Value.Age < 35).ToList();
+        sw.Stop();
+        Console.WriteLine($"{sw.Elapsed} Dictionary");
+        
+        sw.Restart();
+        var foundListEmployeeMinSalary = employeesBankList.MinBy(employee => employee.Salary);
+        sw.Stop();
+        Console.WriteLine($"\nВремя поиска сотрудника с минимальной зарплатой: \n{sw.Elapsed} List");
+        
+        sw.Restart();
+        var foundDictionaryLastOrDefault = clientsBankDictionary.LastOrDefault();
         sw.Stop();
         Console.WriteLine($"\nПоиск в Dictionary: \n{sw.Elapsed} LastOrDefault");
 
-        var lastKey = clientsBankDictionary.Last().Key;
         sw.Restart();
-        var foundDictionaryKey = clientsBankDictionary[lastKey];
+        var foundDictionaryKey = clientsBankDictionary[foundDictionaryLastOrDefault.Key];
         sw.Stop();
         Console.WriteLine($"{sw.Elapsed} Key");
         
