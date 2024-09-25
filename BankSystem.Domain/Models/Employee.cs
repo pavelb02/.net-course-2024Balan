@@ -18,6 +18,8 @@ public class Employee : Person
         Contract =  string.Empty; 
     }
 
+    public Employee() { }
+
     public override string ToString()
     {
         return $"Name: {Name}, Surname: {Surname}, Position: {Position}, Salary: {Salary}";

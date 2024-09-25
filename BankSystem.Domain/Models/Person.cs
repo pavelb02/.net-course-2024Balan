@@ -16,4 +16,5 @@ public class Person
         Age = age;
         Phone = phone;
     }
+    protected Person (){}
 }
