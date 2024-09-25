@@ -1,4 +1,5 @@
 using BankSystem.Domain.Models;
+using Bogus;
 
 namespace BankSystem.App.Services;
 
@@ -6,20 +7,17 @@ public class TestDataGenerator
 {
     public List<Client> GenerateClientsBankList(int count)
     {
-        var clientsList = new List<Client>();
-        var random = new Random();
-        for (var i = 0; i < count; i++)
-        {
-            var name = "Name_client" + i;
-            var surname = "Surname_client" + i;
-            var age = random.Next(18, 70);
-            var numPassport = "NP" + random.Next(100000, 999999);
-            var phone = "+7" + + random.Next(100000000, 999999999);
-            var accountNumber = random.Next(10000, 99999).ToString() + random.Next(10000, 99999);
-            var balance = random.Next(100, 10000) + random.Next(0, 100) / 100m;
-            clientsList.Add(new Client(name, surname, numPassport, age, phone, accountNumber, balance));
-        }
-        return clientsList;
+        Faker<Client> faker = new Faker<Client>("ru")
+            .RuleFor(x => x.ClientId, (faker, _) => faker.Random.Guid())
+            .RuleFor(x => x.Name, (faker, _) => faker.Person.FirstName)
+            .RuleFor(x => x.Surname, (faker, _) => faker.Person.LastName)
+            .RuleFor(x => x.Age, (faker, _) => faker.Random.Int(21,50))
+            .RuleFor(x => x.NumPassport, (faker, _) => faker.Random.Int(100000, 999999).ToString())
+            .RuleFor(x => x.Phone, (faker, _) => faker.Person.Phone)
+            .RuleFor(x => x.AccountNumber, (faker, _) => faker.Finance.Account(10))
+            .RuleFor(x => x.Balance, (faker, _) => faker.Finance.Amount(100, 10000));
+        
+        return faker.Generate(1000);
     }
     public Dictionary<string, Client> GenerateClientsBankDictionary(List<Client> clientsList)
     {
@@ -28,20 +26,18 @@ public class TestDataGenerator
     }
     public List<Employee> GenerateEmployeesBankList(int count, string[] positions)
     {
-        var employeesList = new List<Employee>();
-        var random = new Random();
-        for (var i = 0; i < count; i++)
-        {
-            var name = "Name_employee" + i;
-            var surname = "Surname_employee" + i;
-            var numPassport = "NP" + random.Next(100000, 999999);
-            var age = random.Next(18, 70);
-            var phone = "+7" + + random.Next(100000000, 999999999);
-            var position = positions[random.Next(positions.Length)];
-            var startDate = DateTime.Now.AddYears(-random.Next(1, 10));
-            var salary = random.Next(60, 300) * 50;
-            employeesList.Add(new Employee(name, surname, numPassport, age, phone, position, startDate, salary));
-        }
-        return employeesList;
+        Faker<Employee> faker = new Faker<Employee>("ru")
+            .RuleFor(x => x.Name, (faker, _) => faker.Person.FirstName)
+            .RuleFor(x => x.EmployeeId, (faker, _) => faker.Random.Guid())
+            .RuleFor(x => x.Surname, (faker, _) => faker.Person.LastName)
+            .RuleFor(x => x.Age, (faker, _) => faker.Random.Int(21,50))
+            .RuleFor(x => x.NumPassport, (faker, _) => faker.Random.Int(100000, 999999).ToString())
+            .RuleFor(x => x.Phone, (faker, _) => faker.Person.Phone)
+            .RuleFor(x => x.Position, (faker, _) => faker.PickRandom(positions))
+            .RuleFor(x => x.Salary, (faker, _) => (int)faker.Finance.Amount(100, 10000))
+            .RuleFor(x=>x.StartDate, (faker, _)=> faker.Date.Past(15));
+
+        return faker.Generate(1000);
+        
     }
 }

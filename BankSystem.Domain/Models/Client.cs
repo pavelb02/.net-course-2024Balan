@@ -12,6 +12,9 @@ public class Client : Person
         AccountNumber = accountNumber;
         Balance = balance;
     }
+
+    public Client() { }
+
     public override string ToString()
     {
         return $"Name: {Name}, Surname: {Surname}, Position: AccountNumber: {AccountNumber}, Balance: {Balance} Phone: {Phone}";
