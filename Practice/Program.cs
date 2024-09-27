@@ -109,14 +109,6 @@ class Program
         sw.Stop();
         Console.WriteLine($"{sw.Elapsed} Key\n");
         
-        // Практическое задание Equals GetHashCode
-        Currency[] currencies =
-        {
-            new("USD", "Dollar USA", "$", 16.3m),
-            new("EUR", "Euro", "€", 18.6m),
-            new("RUP", "Russian ruble", "₽", 0.185m)
-        };
-        var clientsBankDictionaryWithAccount = testDataGenerator.GenerateClientsBankDictionaryAccount(clientsBankList, currencies);
         Console.ReadKey();
     }
 
