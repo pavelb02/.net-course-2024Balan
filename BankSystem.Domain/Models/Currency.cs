@@ -21,4 +21,5 @@ public struct Currency
     {
         return $"Код валюты: {Code}, Название валюты: {Name}, Символ валюты: {Symbol}, Стоимость валюты: {ExchangeRate}";
     }
+    
 }
