@@ -3,7 +3,7 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
 VisualStudioVersion = 17.2.32526.322
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "API", "API", "{7FB5AFAE-00AD-4A0E-9E1C-84D3E54A5314}"
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Infrastructure", "Infrastructure", "{7FB5AFAE-00AD-4A0E-9E1C-84D3E54A5314}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Application", "Application", "{2DAB60D7-5A6B-4CEC-A89D-2D0EA563B334}"
 EndProject
@@ -16,6 +16,8 @@ EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Practice", "Practice\Practice.csproj", "{6F6EFE83-B5DF-4955-9C61-E901BFB2FDC1}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BankSystem.App", "BankSystem.App\BankSystem.App.csproj", "{CF7F9BAA-425A-4E1C-8DAB-DC0A49998DC6}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BankSystem.App.Tests", "BankSystem.App.Tests\BankSystem.App.Tests.csproj", "{0ECAF365-6AFE-4817-A6BD-BC5A7A9C72A2}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -35,6 +37,10 @@ Global
 		{CF7F9BAA-425A-4E1C-8DAB-DC0A49998DC6}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{CF7F9BAA-425A-4E1C-8DAB-DC0A49998DC6}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{CF7F9BAA-425A-4E1C-8DAB-DC0A49998DC6}.Release|Any CPU.Build.0 = Release|Any CPU
+		{0ECAF365-6AFE-4817-A6BD-BC5A7A9C72A2}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{0ECAF365-6AFE-4817-A6BD-BC5A7A9C72A2}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{0ECAF365-6AFE-4817-A6BD-BC5A7A9C72A2}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{0ECAF365-6AFE-4817-A6BD-BC5A7A9C72A2}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -46,5 +52,6 @@ Global
 		{8DEAF01B-17EB-452D-973C-871941567F7B} = {B6D2A4F1-0BEC-44A4-92D6-8012DF26CA5B}
 		{6F6EFE83-B5DF-4955-9C61-E901BFB2FDC1} = {BCDD88E8-992E-4798-A26E-12FB1F55E5A5}
 		{CF7F9BAA-425A-4E1C-8DAB-DC0A49998DC6} = {2DAB60D7-5A6B-4CEC-A89D-2D0EA563B334}
+		{0ECAF365-6AFE-4817-A6BD-BC5A7A9C72A2} = {2DAB60D7-5A6B-4CEC-A89D-2D0EA563B334}
 	EndGlobalSection
 EndGlobal

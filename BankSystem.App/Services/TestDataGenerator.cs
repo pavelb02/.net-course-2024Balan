@@ -1,5 +1,7 @@
 using BankSystem.Domain.Models;
 using Bogus;
+using Bogus.DataSets;
+using Currency = BankSystem.Domain.Models.Currency;
 
 namespace BankSystem.App.Services;
 
@@ -23,6 +25,19 @@ public class TestDataGenerator
     {
         var clientsDictionary = clientsList.ToDictionary(client => client.Phone);
         return clientsDictionary;
+    }
+    public Dictionary<Client, Account> GenerateClientsBankDictionaryAccount(List<Client> clientsList, Currency[] currencies)
+    {
+        var faker = new Faker<Account>("ru")
+            .RuleFor(x => x.Ammount, faker => faker.Finance.Amount(100, 10000))
+            .RuleFor(x => x.Currency,faker => faker.PickRandom(currencies));
+        var accounts = faker.Generate(clientsList.Count).ToArray();
+        var clientsDictionaryAccount = new Dictionary<Client, Account>();
+        for (var i = 0; i < clientsList.Count; i++)
+        {
+            clientsDictionaryAccount.Add(clientsList[i], accounts[i]);
+        }
+        return clientsDictionaryAccount;
     }
     public List<Employee> GenerateEmployeesBankList(int count, string[] positions)
     {
