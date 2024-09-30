@@ -24,7 +24,7 @@ public class EquivalenceTests
         //Act
         Account result = clientsBankDictionaryAccount[newClient];
         //Assert
-        Assert.Equal(result, clientsBankDictionaryAccount[clientsBankDictionaryAccount.Keys.First()]);
+        Assert.Equal(result, clientsBankDictionaryAccount[client]);
     }
     [Fact]
     public void GetHashCodeNecessityPositivMultiAccountTest()

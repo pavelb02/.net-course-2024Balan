@@ -23,13 +23,9 @@ public class Client : Person
             return false;
         var client = (Client)obj;
 
-        return Name == client.Name &&
-               Surname == client.Surname &&
-               NumPassport == client.NumPassport &&
-               Age == client.Age &&
-               Phone == client.Phone &&
-               AccountNumber == client.AccountNumber &&
-               Balance == client.Balance;
+        return NumPassport == client.NumPassport &&
+               Phone == client.Phone;
+
     }
     
     public override int GetHashCode()

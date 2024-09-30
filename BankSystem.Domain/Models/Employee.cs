@@ -28,14 +28,8 @@ public class Employee : Person
         if (!(obj is Employee))
             return false;
         var employee = (Employee)obj;
-        return Name == employee.Name &&
-               Surname == employee.Surname &&
-               NumPassport == employee.NumPassport &&
-               Age == employee.Age &&
-               Phone == employee.Phone &&
-               Position == employee.Position &&
-               Salary == employee.Salary &&
-               StartDate == employee.StartDate;
+        return NumPassport == employee.NumPassport &&
+               Phone == employee.Phone;
     }
 
     public override int GetHashCode()
