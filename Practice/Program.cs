@@ -62,7 +62,7 @@ class Program
 
         // Практическое задание List_Dictionary
         var testDataGenerator = new TestDataGenerator();
-        var clientsBankList = testDataGenerator.GenerateClientsBankList(1000);
+        var clientsBankList = testDataGenerator.GenerateClientsBankList(10);
         Console.WriteLine("\n" + clientsBankList.Count + " клиентов банка");
 
         var clientsBankDictionary = testDataGenerator.GenerateClientsBankDictionary(clientsBankList);

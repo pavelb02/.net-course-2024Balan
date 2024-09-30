@@ -1,5 +1,7 @@
 using BankSystem.Domain.Models;
 using Bogus;
+using Bogus.DataSets;
+using Currency = BankSystem.Domain.Models.Currency;
 
 namespace BankSystem.App.Services;
 
@@ -17,12 +19,38 @@ public class TestDataGenerator
             .RuleFor(x => x.AccountNumber, (faker, _) => faker.Finance.Account(10))
             .RuleFor(x => x.Balance, (faker, _) => faker.Finance.Amount(100, 10000));
         
-        return faker.Generate(1000);
+        return faker.Generate(count);
     }
     public Dictionary<string, Client> GenerateClientsBankDictionary(List<Client> clientsList)
     {
         var clientsDictionary = clientsList.ToDictionary(client => client.Phone);
         return clientsDictionary;
+    }
+    public Dictionary<Client, Account> GenerateClientsBankDictionaryAccount(List<Client> clientsList, Currency[] currencies)
+    {
+        var faker = new Faker<Account>("ru")
+            .RuleFor(x => x.Ammount, faker => faker.Finance.Amount(100, 10000))
+            .RuleFor(x => x.Currency,faker => faker.PickRandom(currencies));
+        var accounts = faker.Generate(clientsList.Count).ToArray();
+        var clientsDictionaryAccount = new Dictionary<Client, Account>();
+        for (var i = 0; i < clientsList.Count; i++)
+        {
+            clientsDictionaryAccount.Add(clientsList[i], accounts[i]);
+        }
+        return clientsDictionaryAccount;
+    }
+    public Dictionary<Client, Account[]> GenerateClientsBankDictionaryMultiAccount(List<Client> clientsList, Currency[] currencies)
+    {
+        var faker = new Faker<Account>("ru")
+            .RuleFor(x => x.Ammount, faker => faker.Finance.Amount(100, 10000))
+            .RuleFor(x => x.Currency,faker => faker.PickRandom(currencies));
+        var accounts = faker.Generate(clientsList.Count).ToArray();
+        var clientsDictionaryMultiAccount = new Dictionary<Client, Account[]>();
+        for (var i = 0; i < clientsList.Count; i++)
+        {
+            clientsDictionaryMultiAccount.Add(clientsList[i], accounts);
+        }
+        return clientsDictionaryMultiAccount;
     }
     public List<Employee> GenerateEmployeesBankList(int count, string[] positions)
     {
@@ -37,7 +65,7 @@ public class TestDataGenerator
             .RuleFor(x => x.Salary, (faker, _) => (int)faker.Finance.Amount(100, 10000))
             .RuleFor(x=>x.StartDate, (faker, _)=> faker.Date.Past(15));
 
-        return faker.Generate(1000);
+        return faker.Generate(count);
         
     }
 }
