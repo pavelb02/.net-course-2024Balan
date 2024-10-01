@@ -69,3 +69,58 @@ public class ClientStorageTests
         Assert.Equal(averageAgeClient, averageAgeClientMethod);
     }
 }
+
+public class EmployeeStorageTests
+{
+    EmployeeStorage employeeStorage = new EmployeeStorage();
+    TestDataGenerator testDataGenerator = new TestDataGenerator();
+    string[] positions = { "Cashier", "Service Specialist", "Counselor", "Manager", "Bank Accountant", "Financial Analyst", "Auditor", "IT specialist" };
+
+    [Fact]
+    public void AddEmployeeToCollectionPositiv()
+    {
+        //Arrange
+        var employeesBankList = testDataGenerator.GenerateEmployeesBankList(10, positions);
+        //Act
+        employeeStorage.AddEmployeeToCollection(employeesBankList);
+        //Assert
+        Assert.NotNull(employeeStorage.GetAllEmployees());
+        Assert.True(employeeStorage.GetAllEmployees().SequenceEqual(employeesBankList));
+    }
+    [Fact]
+    public void SearchYoungEmployeePositiv()
+    {
+        //Arrange
+        var employeesBankList = testDataGenerator.GenerateEmployeesBankList(10, positions);
+        employeeStorage.AddEmployeeToCollection(employeesBankList);
+        var youngEmployee = employeesBankList.MinBy(c => c.Age);
+        //Act
+        var youngEmployeeMethod = employeeStorage.SearchYoungEmployee();
+        //Assert
+        Assert.Equal(youngEmployee.Age, youngEmployeeMethod.Age);
+    }
+    [Fact]
+    public void SearchOldEmployeePositiv()
+    {
+        //Arrange
+        var employeesBankList = testDataGenerator.GenerateEmployeesBankList(10, positions);
+        employeeStorage.AddEmployeeToCollection(employeesBankList);
+        var oldEmployee = employeesBankList.MaxBy(c => c.Age);
+        //Act
+        var oldEmployeeMethod = employeeStorage.SearchOldEmployee();
+        //Assert
+        Assert.Equal(oldEmployee.Age, oldEmployeeMethod.Age);
+    }
+    [Fact]
+    public void SearchAverageEmployeePositiv()
+    {
+        //Arrange
+        var employeesBankList = testDataGenerator.GenerateEmployeesBankList(10, positions);
+        employeeStorage.AddEmployeeToCollection(employeesBankList);
+        var averageAgeEmployee = (int)employeesBankList.Average(c => c.Age);
+        //Act
+        var averageAgeEmployeeMethod = employeeStorage.SearchAverageAgeEmployee();
+        //Assert
+        Assert.Equal(averageAgeEmployee, averageAgeEmployeeMethod);
+    }
+}

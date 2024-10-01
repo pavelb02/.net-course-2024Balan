@@ -34,3 +34,36 @@ public class ClientStorage
         return (int)CollectionClients.Average(c => c.Key.Age);
     }
 }
+
+
+public class EmployeeStorage
+{
+    private List<Employee> CollectionEmployees { get; set; }
+    public EmployeeStorage()
+    {
+        CollectionEmployees = new List<Employee>();
+    }
+    public List<Employee> GetAllEmployees()
+    {
+        return CollectionEmployees;
+    }
+    public void AddEmployeeToCollection(List<Employee> collectionEmployees)
+    {
+        foreach (var employee in collectionEmployees)
+        {
+            CollectionEmployees.Add(employee);
+        }
+    }
+    public Employee? SearchYoungEmployee()
+    {
+        return CollectionEmployees.MinBy(c => c.Age);
+    }
+    public Employee? SearchOldEmployee()
+    {
+        return CollectionEmployees.MaxBy(c => c.Age);
+    }
+    public int? SearchAverageAgeEmployee()
+    {
+        return (int)CollectionEmployees.Average(c => c.Age);
+    }
+}
