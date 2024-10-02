@@ -4,66 +4,66 @@ namespace BankSystem.Data.Storages;
 
 public class ClientStorage
 {
-    private Dictionary<Client, Account[]> CollectionClients { get; set; }
+    private Dictionary<Client, Account[]> Clients { get; set; }
 
     public ClientStorage()
     {
-        CollectionClients = new Dictionary<Client, Account[]>();
+        Clients = new Dictionary<Client, Account[]>();
     }
     public Dictionary<Client, Account[]> GetAllClients()
     {
-        return CollectionClients;
+        return new Dictionary<Client, Account[]>(Clients);
     }
-    public void AddClientToCollection(Dictionary<Client, Account[]> collectionClients)
+    public void AddClientToCollection(Dictionary<Client, Account[]> clients)
     {
-        foreach (var client in collectionClients)
+        foreach (var client in clients)
         {
-            CollectionClients.Add(client.Key, client.Value);
+            Clients.Add(client.Key, client.Value);
         }
     }
     public Client? SearchYoungClient()
     {
-        return CollectionClients.MinBy(c => c.Key.Age).Key;
+        return Clients.MinBy(c => c.Key.Age).Key;
     }
     public Client? SearchOldClient()
     {
-        return CollectionClients.MaxBy(c => c.Key.Age).Key;
+        return Clients.MaxBy(c => c.Key.Age).Key;
     }
     public int? SearchAverageAgeClient()
     {
-        return (int)CollectionClients.Average(c => c.Key.Age);
+        return (int)Clients.Average(c => c.Key.Age);
     }
 }
 
 
 public class EmployeeStorage
 {
-    private List<Employee> CollectionEmployees { get; set; }
+    private List<Employee> Employees { get; set; }
     public EmployeeStorage()
     {
-        CollectionEmployees = new List<Employee>();
+        Employees = new List<Employee>();
     }
     public List<Employee> GetAllEmployees()
     {
-        return CollectionEmployees;
+        return new List<Employee>(Employees);
     }
-    public void AddEmployeeToCollection(List<Employee> collectionEmployees)
+    public void AddEmployeeToCollection(List<Employee> employees)
     {
-        foreach (var employee in collectionEmployees)
+        foreach (var employee in employees)
         {
-            CollectionEmployees.Add(employee);
+            Employees.Add(employee);
         }
     }
     public Employee? SearchYoungEmployee()
     {
-        return CollectionEmployees.MinBy(c => c.Age);
+        return Employees.MinBy(c => c.Age);
     }
     public Employee? SearchOldEmployee()
     {
-        return CollectionEmployees.MaxBy(c => c.Age);
+        return Employees.MaxBy(c => c.Age);
     }
     public int? SearchAverageAgeEmployee()
     {
-        return (int)CollectionEmployees.Average(c => c.Age);
+        return (int)Employees.Average(c => c.Age);
     }
 }
