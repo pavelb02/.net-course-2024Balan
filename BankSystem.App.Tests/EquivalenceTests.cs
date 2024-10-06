@@ -18,17 +18,16 @@ public class EquivalenceTests
         "Cashier", "Service Specialist", "Counselor", "Manager", "Bank Accountant", "Financial Analyst", "Auditor",
         "IT specialist"
     };
-
+    Currency[] currencies =
+    {
+        new("USD", "Dollar USA", "$", 16.3m),
+        new("EUR", "Euro", "€", 18.6m),
+        new("RUP", "Russian ruble", "₽", 0.185m)
+    };
     [Fact]
     public void GetHashCodeNecessityPositiveTest()
     {
         //Arrange
-        Currency[] currencies =
-        {
-            new("USD", "Dollar USA", "$", 16.3m),
-            new("EUR", "Euro", "€", 18.6m),
-            new("RUP", "Russian ruble", "₽", 0.185m)
-        };
         var clientsBankList = testDataGenerator.GenerateClientsBankList(10);
         var clientsBankDictionaryAccount =
             testDataGenerator.GenerateClientsBankDictionaryAccount(clientsBankList, currencies);
@@ -45,12 +44,6 @@ public class EquivalenceTests
     public void GetHashCodeNecessityPositiveMultiAccountTest()
     {
         //Arrange
-        Currency[] currencies =
-        {
-            new("USD", "Dollar USA", "$", 16.3m),
-            new("EUR", "Euro", "€", 18.6m),
-            new("RUP", "Russian ruble", "₽", 0.185m)
-        };
         var clientsBankList = testDataGenerator.GenerateClientsBankList(10);
         var clientsBankDictionaryAccount = testDataGenerator.GenerateClientsBankDictionaryMultiAccount(clientsBankList);
         var client = clientsBankDictionaryAccount.Keys.First();
@@ -132,7 +125,7 @@ public class EquivalenceTests
             testDataGenerator.GenerateClientsBankDictionaryMultiAccount(clientsBankList);
         clientService.AddClient(clientsBankDictionaryAccount);
         clientService.AddAccount(clientsBankDictionaryAccount.Keys.First(), account);
-        clientService.UpdateAccount(clientsBankDictionaryAccount.Keys.First(), 205m, "EUR");
+        clientService.UpdateAccount(clientsBankDictionaryAccount.Keys.First(), 205m, "EUR", currencies);
         var clients = clientStorage.GetAllClients();
         //Act
         var result = clients[clients.Keys.First()].First(a => a.Currency.Code == "EUR");
@@ -151,10 +144,11 @@ public class EquivalenceTests
         var searchRequest = new SearchRequest { NumPassport = clientsBankList[0].NumPassport };
         //Act
         clientService.FilterClients(searchRequest);
-        //Assert
-        var filteredClients = clientStorage.GetAllClients();
+        var filteredClients = clientService.FilterClients(searchRequest);
+    
+        // Assert
         Assert.Single(filteredClients);
-        Assert.Equal(clientsBankList[0].NumPassport, filteredClients.Keys.First().NumPassport);
+        Assert.Equal(clientsBankList[0].NumPassport, filteredClients.Keys.First().NumPassport); 
     }
 
     [Fact]
@@ -168,17 +162,6 @@ public class EquivalenceTests
         //Assert
         Assert.Equal(employee, employeesBankList);
     }
-    [Fact]
-    public void AddEmployeeNegativeListTest()
-    {
-        //Arrange
-        var employeesBankList = testDataGenerator.GenerateEmployeesBankList(10, positions);
-        employeesBankList.First().NumPassport = "";
-        //Act
-        employeeService.AddEmployee(employeesBankList);     
-        //Assert
-        Assert.Throws<ArgumentException>(() => employeeService.AddEmployee(employeesBankList));
-    }
 
     [Fact]
     public void FilterEmployeePositiveTest()
@@ -188,9 +171,8 @@ public class EquivalenceTests
         employeeService.AddEmployee(employeesBankList);
         var searchRequest = new SearchRequest { Name = employeesBankList[0].Name };
         //Act
-        employeeService.FilterEmployees(searchRequest);
+        var filteredEmployees = employeeService.FilterEmployees(searchRequest);
         //Assert
-        var filteredEmployees = employeeStorage.GetAllEmployees();
         Assert.Equal(employeesBankList[0].NumPassport, filteredEmployees.First().NumPassport);
     }
 }

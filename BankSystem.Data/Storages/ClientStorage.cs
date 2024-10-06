@@ -14,6 +14,18 @@ public class ClientStorage
     {
         return new Dictionary<Client, Account[]>(Clients);
     }
+    public KeyValuePair<Client, Account[]>? GetClient(Client client)
+    {
+        if (Clients.TryGetValue(client, out var accounts))
+        {
+            return new KeyValuePair<Client, Account[]>(client, accounts);
+        }
+        return null;
+    }
+    public void UpdateClientAccounts(Client client, Account[] accounts)
+    {
+        Clients[client] = accounts;
+    }
     public void AddClientToCollection(Dictionary<Client, Account[]> clients)
     {
         foreach (var client in clients)
@@ -23,7 +35,6 @@ public class ClientStorage
     }
     public void UpdateCollection(Dictionary<Client, Account[]> clients)
     {
-        Clients.Clear();
       foreach (var client in clients)
       {
           Clients[client.Key] = client.Value;

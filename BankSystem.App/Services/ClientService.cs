@@ -1,25 +1,17 @@
 ﻿using BankSystem.App.Exeptions;
 using BankSystem.Data.Storages;
 using BankSystem.Domain.Models;
-
 namespace BankSystem.App.Services;
 
 public class ClientService
 {
     ClientStorage _clientStorage;
-    TestDataGenerator testDataGenerator = new();
 
     public ClientService(ClientStorage clientStorage)
     {
         _clientStorage = clientStorage;
     }
-    Currency[] currencies =
-    {
-        new("USD", "Dollar USA", "$", 16.3m),
-        new("EUR", "Euro", "€", 18.6m),
-        new("RUP", "Russian ruble", "₽", 0.185m)
-    };
- 
+
     public void AddClient(Dictionary<Client, Account[]> clientsBankDictionaryAccount)
     {
         var clientsBankDictionaryAccountCorrect = new Dictionary<Client, Account[]>();
@@ -41,46 +33,47 @@ public class ClientService
 
     public void AddAccount(Client client, Account[] accounts)
     {
-        var clientsBankDictionaryAccount = _clientStorage.GetAllClients();
+        var clientOne = _clientStorage.GetClient(client);
         try
         {
-            if (!clientsBankDictionaryAccount.ContainsKey(client))
-                throw new ClientNotFoundException();
-            
+            if (clientOne == null)
+                throw new EntityNotFoundException(nameof(client));
             if (ValidateAccount(accounts))
-                clientsBankDictionaryAccount[client] = clientsBankDictionaryAccount[client].Concat(accounts).ToArray();
+            {
+                var updatedAccounts = clientOne.Value.Value.Concat(accounts).ToArray();
+                _clientStorage.UpdateClientAccounts(client, updatedAccounts);
+            }
         }
         catch (Exception ex)
         {
             Console.WriteLine($"Ошибка при добавлении аккаунта: {ex.Message}");
         }
-        _clientStorage.UpdateCollection(clientsBankDictionaryAccount);
     }
     
-    public void UpdateAccount(Client client, decimal ammount, string currencyCode)
+    public void UpdateAccount(Client client, decimal ammount, string currencyCode, Currency[] currencies)
     {
-        var clientsBankDictionaryAccount = _clientStorage.GetAllClients();
+        var clientOne = _clientStorage.GetClient(client);
         try
         {
-            if (!clientsBankDictionaryAccount.ContainsKey(client))
-                throw new ClientNotFoundException();
-            if (testDataGenerator.ValidateCurrency(currencyCode, currencies))
+            if (clientOne == null)
+                throw new EntityNotFoundException(nameof(client));
+            if (ValidateCurrency(currencyCode, currencies))
             {
-                var account = clientsBankDictionaryAccount[client].First(a => a.Currency.Code == currencyCode);
+                var account = clientOne.Value.Value.First(a => a.Currency.Code == currencyCode);
                 if (ammount < 0)
                     throw new ArgumentOutOfRangeException(nameof(ammount),
                         "Сумма на счету не может быть меньше нуля.");
                 account.Ammount = ammount;
+                _clientStorage.UpdateClientAccounts(client, clientOne.Value.Value);
             }
         }
         catch (Exception ex)
         {
             Console.WriteLine($"Ошибка при обновлении аккаунта: {ex.Message}");
         }
-        _clientStorage.UpdateCollection(clientsBankDictionaryAccount);
     }
 
-    public void FilterClients(SearchRequest searchRequest)
+    public Dictionary<Client, Account[]> FilterClients(SearchRequest searchRequest)
     {
         var clients = _clientStorage.GetAllClients();
         IEnumerable<KeyValuePair<Client,Account[]>> request = clients;
@@ -110,9 +103,22 @@ public class ClientService
             request = request.Where(c => 
                 c.Key.DateBirthday >= searchRequest.DateStart && c.Key.DateBirthday <= searchRequest.DateEnd); 
         }
-        _clientStorage.UpdateCollection(request.ToDictionary());
+        return request.ToDictionary();
     }
-    
+    public bool ValidateCurrency(string currencyCode, Currency[] currencies)
+    {
+        if (string.IsNullOrWhiteSpace(currencyCode))
+        {
+            throw new ArgumentException("В метод передана пустая строка (или из пробелов) или null", nameof(currencyCode));
+        }
+
+        if (currencies.All(c => c.Code != currencyCode))
+        {
+            throw new EntityNotFoundException(nameof(currencyCode));
+        }
+        
+        return true;
+    }
     private bool ValidateAccount(Account[] accountsArray)
     {
         foreach (var account in accountsArray)

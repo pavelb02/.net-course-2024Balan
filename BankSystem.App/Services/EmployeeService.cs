@@ -32,7 +32,7 @@ public class EmployeeService
 
         _employeeStorage.AddEmployeeToCollection(employeesCorrect);
     }
-    public void FilterEmployees(SearchRequest searchRequest)
+    public List<Employee> FilterEmployees(SearchRequest searchRequest)
     {
         var employees = _employeeStorage.GetAllEmployees();
         if (!string.IsNullOrWhiteSpace(searchRequest.Name))
@@ -61,7 +61,7 @@ public class EmployeeService
             employees = employees.Where(e => 
                 e.DateBirthday >= searchRequest.DateStart && e.DateBirthday <= searchRequest.DateEnd).ToList(); 
         }
-        _employeeStorage.UpdateCollection(employees.ToList());
+        return employees;
     }
     private bool ValidateAddEmployee(Employee employee)
     {

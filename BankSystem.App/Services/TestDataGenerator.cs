@@ -52,32 +52,17 @@ public class TestDataGenerator
         };
 
         Currency selectedCurrency;
-        if (ValidateCurrency(currencyCode, currencies))
+        if (currencies.Any(c => c.Code == currencyCode))
         {
             selectedCurrency = currencies.First(c => c.Code == currencyCode);
         }
         else
         {
             selectedCurrency = currencies.First(c => c.Code == "USD");
-        }
-        var faker = new Faker<Account>("ru")
+        }        var faker = new Faker<Account>("ru")
             .RuleFor(x => x.Ammount, faker => faker.Finance.Amount(100, 10000))
             .RuleFor(x => x.Currency,_  => selectedCurrency);
         return faker.Generate(count).ToArray();
-    }
-    public bool ValidateCurrency(string currencyCode, Currency[] currencies)
-    {
-        if (string.IsNullOrWhiteSpace(currencyCode))
-        {
-            throw new ArgumentException("В метод передана пустая строка (или из пробелов) или null", nameof(currencyCode));
-        }
-
-        if (currencies.All(c => c.Code != currencyCode))
-        {
-            throw new CurrencyNotFoundException(currencyCode);
-        }
-        
-        return true;
     }
     public Dictionary<Client, Account[]> GenerateClientsBankDictionaryMultiAccount(List<Client> clientsList)
     {
