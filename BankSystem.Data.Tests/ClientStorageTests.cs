@@ -8,18 +8,12 @@ public class ClientStorageTests
 {
     ClientStorage clientStorage = new ClientStorage();
     TestDataGenerator testDataGenerator = new TestDataGenerator();
-    Currency[] currencies =
-    {
-        new("USD", "Dollar USA", "$", 16.3m),
-        new("EUR", "Euro", "€", 18.6m),
-        new("RUP", "Russian ruble", "₽", 0.185m)
-    };
     [Fact]
     public void AddClientToCollectionPositiv()
     {
         //Arrange
         var clientsBankList = testDataGenerator.GenerateClientsBankList(10);
-        var clientsBankDictionaryAccount = testDataGenerator.GenerateClientsBankDictionaryMultiAccount(clientsBankList, currencies);
+        var clientsBankDictionaryAccount = testDataGenerator.GenerateClientsBankDictionaryMultiAccount(clientsBankList);
         //Act
         clientStorage.AddClientToCollection(clientsBankDictionaryAccount);
         //Assert
@@ -31,7 +25,7 @@ public class ClientStorageTests
     {
         //Arrange
         var clientsBankList = testDataGenerator.GenerateClientsBankList(10);
-        var clientsBankDictionaryAccount = testDataGenerator.GenerateClientsBankDictionaryMultiAccount(clientsBankList, currencies);
+        var clientsBankDictionaryAccount = testDataGenerator.GenerateClientsBankDictionaryMultiAccount(clientsBankList);
         clientStorage.AddClientToCollection(clientsBankDictionaryAccount);
         
         var youngClient = clientsBankDictionaryAccount.MinBy(c => c.Key.Age).Key;
@@ -45,7 +39,7 @@ public class ClientStorageTests
     {
         //Arrange
         var clientsBankList = testDataGenerator.GenerateClientsBankList(10);
-        var clientsBankDictionaryAccount = testDataGenerator.GenerateClientsBankDictionaryMultiAccount(clientsBankList, currencies);
+        var clientsBankDictionaryAccount = testDataGenerator.GenerateClientsBankDictionaryMultiAccount(clientsBankList);
         clientStorage.AddClientToCollection(clientsBankDictionaryAccount);
         
         var oldClient = clientsBankDictionaryAccount.MaxBy(c => c.Key.Age).Key;
@@ -59,7 +53,7 @@ public class ClientStorageTests
     {
         //Arrange
         var clientsBankList = testDataGenerator.GenerateClientsBankList(10);
-        var clientsBankDictionaryAccount = testDataGenerator.GenerateClientsBankDictionaryMultiAccount(clientsBankList, currencies);
+        var clientsBankDictionaryAccount = testDataGenerator.GenerateClientsBankDictionaryMultiAccount(clientsBankList);
         clientStorage.AddClientToCollection(clientsBankDictionaryAccount);
         
         var averageAgeClient = (int)clientsBankDictionaryAccount.Average(c => c.Key.Age);

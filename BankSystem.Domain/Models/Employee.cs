@@ -9,8 +9,8 @@ public class Employee : Person
     public string Contract { get; set; }
 
     public Employee(string name, string surname, string numPassport, int age, string phone, string position,
-        DateTime startDate, int salary)
-        : base(name, surname, numPassport, age, phone)
+        DateTime startDate, int salary, DateTime dateBirthday)
+        : base(name, surname, numPassport, age, phone, dateBirthday)
     {
         EmployeeId = Guid.NewGuid();
         Position = position;
@@ -42,6 +42,7 @@ public class Employee : Person
         hashCode = (hashCode * 31) ^ (Position?.GetHashCode() ?? 0);
         hashCode = (hashCode * 31) ^ Salary.GetHashCode();
         hashCode = (hashCode * 31) ^ StartDate.GetHashCode();
+        hashCode = (hashCode * 31) ^ DateBirthday.GetHashCode();
         return hashCode;
     }
 

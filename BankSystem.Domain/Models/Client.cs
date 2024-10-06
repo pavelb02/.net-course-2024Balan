@@ -5,8 +5,8 @@ public class Client : Person
     public Guid ClientId { get; set; }
     public string AccountNumber { get; set; }
     public decimal Balance { get; set; }
-    public Client(string name, string surname, string numPassport, int age, string phone, string accountNumber, decimal balance)
-        : base(name, surname, numPassport, age, phone)
+    public Client(string name, string surname, string numPassport, int age, string phone, string accountNumber, decimal balance, DateTime dateBirthday)
+        : base(name, surname, numPassport, age, phone, dateBirthday)
     {
         ClientId = Guid.NewGuid();
         AccountNumber = accountNumber;
