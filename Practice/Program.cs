@@ -10,7 +10,7 @@ class Program
     {
         // Практическое задание 
         // 1 part
-        Employee employee1 = new ("Ivan", "Ivanov", "TY563156", 25,"7894561230", "Manager", DateTime.Now, 5000);
+        Employee employee1 = new ("Ivan", "Ivanov", "TY563156", 25,"7894561230", "Manager", DateTime.Now, 5000, new DateTime(2000, 8, 21));
         
         Console.WriteLine(employee1.Contract);
         GenerateContract(employee1);
@@ -23,27 +23,27 @@ class Program
         Console.WriteLine();
         // 2 part
         // Лист клиентов банка
-        var client = new Client("Dmitriy", "Dmitrov", "YU156489", 27, "7984248948", "1782936458", 10000.50m);
+        var client = new Client("Dmitriy", "Dmitrov", "YU156489", 27, "7984248948", "1782936458", 10000.50m, new DateTime(1990, 8, 21));
         var clients = new List<Client>
         {
             client,
-            new Client("Alexey", "Alexeev", "YY187459", 28, "7897458948", "1789474818", 31500.00m),
-            new Client("Sergey", "Seriev", "HU789654", 26, "7982758728", "1782151511", 120400.60m),
-            new Client("Viktor", "Viktorov", "YE147852", 24, "7278287948", "1714541458", 82000.80m),
-            new Client("Pavel", "Pavlov", "DU369852", 22, "7782827278", "1751578578", 23000.75m)
+            new Client("Alexey", "Alexeev", "YY187459", 28, "7897458948", "1789474818", 31500.00m, new DateTime(1995, 8, 21)),
+            new Client("Sergey", "Seriev", "HU789654", 26, "7982758728", "1782151511", 120400.60m, new DateTime(1996, 8, 21)),
+            new Client("Viktor", "Viktorov", "YE147852", 24, "7278287948", "1714541458", 82000.80m, new DateTime(1999, 8, 21)),
+            new Client("Pavel", "Pavlov", "DU369852", 22, "7782827278", "1751578578", 23000.75m, new DateTime(1992, 8, 21))
         };
         // Лист сотрудников
         var employees = new List<Employee>
         {
-            new Employee("Ivan", "Ivanov", "TY563156", 29, "7894561230", "Manager", DateTime.Now, 5000),
-            new Employee("Petr", "Petrov", "RT768451", 31, "7782453210", "Engineer", DateTime.Now, 4500)
+            new Employee("Ivan", "Ivanov", "TY563156", 29, "7894561230", "Manager", DateTime.Now, 5000, new DateTime(2002, 8, 21)),
+            new Employee("Petr", "Petrov", "RT768451", 31, "7782453210", "Engineer", DateTime.Now, 4500, new DateTime(1999, 8, 21))
         };
         // Лист владельцев
         var owners = new List<Employee>
         {
-            new Employee("Sergey", "Sidorov", "PL123456", 42, "7765432190", "Owner", DateTime.Now, 0),
-            new Employee("Olga", "Smirnova", "WE987654", 37, "7543217890", "Co-owner", DateTime.Now, 0),
-            new Employee("Ekaterina", "Kuznetsova", "YT789654", 39, "7321765890", "Co-owner", DateTime.Now, 0)
+            new Employee("Sergey", "Sidorov", "PL123456", 42, "7765432190", "Owner", DateTime.Now, 0, new DateTime(1993, 8, 21)),
+            new Employee("Olga", "Smirnova", "WE987654", 37, "7543217890", "Co-owner", DateTime.Now, 0, new DateTime(1997, 8, 21)),
+            new Employee("Ekaterina", "Kuznetsova", "YT789654", 39, "7321765890", "Co-owner", DateTime.Now, 0, new DateTime(2000, 2, 9))
         };
         var bankService = new BankService();
         var salaryOwner= bankService.SalaryCalculate(clients, employees, owners.Count);
@@ -55,7 +55,7 @@ class Program
         }
 
         Console.WriteLine();
-        var clientBank = new Client("Vasiliy", "Vaskov", "KJ197358", 21, "7465426248", "7568941412", 12300.20m);
+        var clientBank = new Client("Vasiliy", "Vaskov", "KJ197358", 21, "7465426248", "7568941412", 12300.20m, new DateTime(2000, 9, 29));
         Console.WriteLine(clientBank.ToString());
         var employeeBank = bankService.ChangeClientToEmployee(clientBank, 2500);
         Console.WriteLine(employeeBank.ToString());

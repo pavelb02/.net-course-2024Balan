@@ -19,7 +19,7 @@ public class BankService
     public Employee ChangeClientToEmployee(Client client, int internSalary)
     {
         Employee employee = new(client.Name, client.Surname, client.NumPassport, client.Age, client.Phone, "Intern",
-            DateTime.Now, internSalary);
+            DateTime.Now, internSalary, new DateTime(2002, 7, 20));
         return employee;
     }
 }

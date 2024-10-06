@@ -1,3 +1,4 @@
+using BankSystem.App.Exeptions;
 using BankSystem.Domain.Models;
 using Bogus;
 using Bogus.DataSets;
@@ -13,11 +14,12 @@ public class TestDataGenerator
             .RuleFor(x => x.ClientId, (faker, _) => faker.Random.Guid())
             .RuleFor(x => x.Name, (faker, _) => faker.Person.FirstName)
             .RuleFor(x => x.Surname, (faker, _) => faker.Person.LastName)
-            .RuleFor(x => x.Age, (faker, _) => faker.Random.Int(21,50))
             .RuleFor(x => x.NumPassport, (faker, _) => faker.Random.Int(100000, 999999).ToString())
             .RuleFor(x => x.Phone, (faker, _) => faker.Person.Phone)
             .RuleFor(x => x.AccountNumber, (faker, _) => faker.Finance.Account(10))
-            .RuleFor(x => x.Balance, (faker, _) => faker.Finance.Amount(100, 10000));
+            .RuleFor(x => x.Balance, (faker, _) => faker.Finance.Amount(100, 10000))
+            .RuleFor(x => x.DateBirthday, (faker, _) => faker.Date.Between(DateTime.Now.AddYears(-50), DateTime.Now.AddYears(-18)))
+            .RuleFor(x => x.Age, (faker, client) => CalculateAge(client.DateBirthday));;
         
         return faker.Generate(count);
     }
@@ -39,12 +41,32 @@ public class TestDataGenerator
         }
         return clientsDictionaryAccount;
     }
-    public Dictionary<Client, Account[]> GenerateClientsBankDictionaryMultiAccount(List<Client> clientsList, Currency[] currencies)
+
+    public Account[] GenerateAccountsArray(int count, string currencyCode)
     {
-        var faker = new Faker<Account>("ru")
+        Currency[] currencies =
+        {
+            new("USD", "Dollar USA", "$", 16.3m),
+            new("EUR", "Euro", "€", 18.6m),
+            new("RUP", "Russian ruble", "₽", 0.185m)
+        };
+
+        Currency selectedCurrency;
+        if (currencies.Any(c => c.Code == currencyCode))
+        {
+            selectedCurrency = currencies.First(c => c.Code == currencyCode);
+        }
+        else
+        {
+            selectedCurrency = currencies.First(c => c.Code == "USD");
+        }        var faker = new Faker<Account>("ru")
             .RuleFor(x => x.Ammount, faker => faker.Finance.Amount(100, 10000))
-            .RuleFor(x => x.Currency,faker => faker.PickRandom(currencies));
-        var accounts = faker.Generate(clientsList.Count).ToArray();
+            .RuleFor(x => x.Currency,_  => selectedCurrency);
+        return faker.Generate(count).ToArray();
+    }
+    public Dictionary<Client, Account[]> GenerateClientsBankDictionaryMultiAccount(List<Client> clientsList)
+    {
+        var accounts = GenerateAccountsArray(1, "USD");
         var clientsDictionaryMultiAccount = new Dictionary<Client, Account[]>();
         for (var i = 0; i < clientsList.Count; i++)
         {
@@ -58,14 +80,27 @@ public class TestDataGenerator
             .RuleFor(x => x.Name, (faker, _) => faker.Person.FirstName)
             .RuleFor(x => x.EmployeeId, (faker, _) => faker.Random.Guid())
             .RuleFor(x => x.Surname, (faker, _) => faker.Person.LastName)
-            .RuleFor(x => x.Age, (faker, _) => faker.Random.Int(21,50))
             .RuleFor(x => x.NumPassport, (faker, _) => faker.Random.Int(100000, 999999).ToString())
             .RuleFor(x => x.Phone, (faker, _) => faker.Person.Phone)
             .RuleFor(x => x.Position, (faker, _) => faker.PickRandom(positions))
             .RuleFor(x => x.Salary, (faker, _) => (int)faker.Finance.Amount(100, 10000))
-            .RuleFor(x=>x.StartDate, (faker, _)=> faker.Date.Past(15));
+            .RuleFor(x => x.StartDate, (faker, _) => faker.Date.Past(15))
+            .RuleFor(x => x.DateBirthday,
+                (faker, _) => faker.Date.Between(DateTime.Now.AddYears(-50), DateTime.Now.AddYears(-18)))
+            .RuleFor(x => x.Age, (faker, employee) => CalculateAge(employee.DateBirthday));;
 
         return faker.Generate(count);
         
+    }
+    public int CalculateAge(DateTime dateBirthday)
+    {
+        int age = DateTime.Now.Year - dateBirthday.Year;
+        
+        if (DateTime.Now < dateBirthday.AddYears(age))
+        {
+            age--;
+        }
+
+        return age;
     }
 }

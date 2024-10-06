@@ -14,6 +14,18 @@ public class ClientStorage
     {
         return new Dictionary<Client, Account[]>(Clients);
     }
+    public KeyValuePair<Client, Account[]>? GetClient(Client client)
+    {
+        if (Clients.TryGetValue(client, out var accounts))
+        {
+            return new KeyValuePair<Client, Account[]>(client, accounts);
+        }
+        return null;
+    }
+    public void UpdateClientAccounts(Client client, Account[] accounts)
+    {
+        Clients[client] = accounts;
+    }
     public void AddClientToCollection(Dictionary<Client, Account[]> clients)
     {
         foreach (var client in clients)
@@ -21,6 +33,14 @@ public class ClientStorage
             Clients.Add(client.Key, client.Value);
         }
     }
+    public void UpdateCollection(Dictionary<Client, Account[]> clients)
+    {
+      foreach (var client in clients)
+      {
+          Clients[client.Key] = client.Value;
+      }
+    }
+
     public Client? SearchYoungClient()
     {
         return Clients.MinBy(c => c.Key.Age).Key;
@@ -32,38 +52,5 @@ public class ClientStorage
     public int? SearchAverageAgeClient()
     {
         return (int)Clients.Average(c => c.Key.Age);
-    }
-}
-
-
-public class EmployeeStorage
-{
-    private List<Employee> Employees { get; set; }
-    public EmployeeStorage()
-    {
-        Employees = new List<Employee>();
-    }
-    public List<Employee> GetAllEmployees()
-    {
-        return new List<Employee>(Employees);
-    }
-    public void AddEmployeeToCollection(List<Employee> employees)
-    {
-        foreach (var employee in employees)
-        {
-            Employees.Add(employee);
-        }
-    }
-    public Employee? SearchYoungEmployee()
-    {
-        return Employees.MinBy(c => c.Age);
-    }
-    public Employee? SearchOldEmployee()
-    {
-        return Employees.MaxBy(c => c.Age);
-    }
-    public int? SearchAverageAgeEmployee()
-    {
-        return (int)Employees.Average(c => c.Age);
     }
 }
