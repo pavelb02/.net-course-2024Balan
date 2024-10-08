@@ -21,6 +21,7 @@
     </ItemGroup>
 
     <ItemGroup>
+      <ProjectReference Include="..\BankSystem.Data\BankSystem.Data.csproj" />
       <ProjectReference Include="..\Practice\Practice.csproj" />
     </ItemGroup>
 
