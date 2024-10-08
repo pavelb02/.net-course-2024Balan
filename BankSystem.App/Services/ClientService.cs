@@ -1,111 +1,89 @@
 ﻿using BankSystem.App.Exeptions;
-using BankSystem.Data.Storages;
+using BankSystem.App.Interfaces;
 using BankSystem.Domain.Models;
 namespace BankSystem.App.Services;
 
 public class ClientService
 {
-    ClientStorage _clientStorage;
+    private readonly IClientStorage _clientStorage;
 
-    public ClientService(ClientStorage clientStorage)
+    public ClientService(IClientStorage clientStorage)
     {
         _clientStorage = clientStorage;
     }
 
     public void AddClient(Dictionary<Client, Account[]> clientsBankDictionaryAccount)
     {
-        var clientsBankDictionaryAccountCorrect = new Dictionary<Client, Account[]>();
-        foreach (var client in clientsBankDictionaryAccount)
+        try
         {
-            try
+            foreach (var client in clientsBankDictionaryAccount)
             {
-                if (ValidateAddClient(client))
-                    clientsBankDictionaryAccountCorrect.Add(client.Key, client.Value);
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine($"Ошибка при добавлении клиента: {ex.Message}");
+
+                if (ValidateAddClient(client.Key))
+                {
+                    _clientStorage.Add(client.Key);
+                    if (ValidateAccount(client.Value))
+                    {
+                        _clientStorage.AddAccount(client.Key, client.Value);
+                    }
+                }
             }
         }
-
-        _clientStorage.AddClientToCollection(clientsBankDictionaryAccountCorrect);
+        catch (Exception ex)
+        {
+            throw new ArgumentException($"Ошибка при добавлении клиента: {ex.Message}", ex);
+        }
     }
 
     public void AddAccount(Client client, Account[] accounts)
     {
-        var clientOne = _clientStorage.GetClient(client);
+        var clientOne = _clientStorage.Get(new SearchRequest { NumPassport = client.NumPassport}).First();
         try
         {
             if (clientOne == null)
                 throw new EntityNotFoundException(nameof(client));
             if (ValidateAccount(accounts))
-            {
-                var updatedAccounts = clientOne.Value.Value.Concat(accounts).ToArray();
-                _clientStorage.UpdateClientAccounts(client, updatedAccounts);
-            }
+                _clientStorage.AddAccount(clientOne, accounts); 
         }
         catch (Exception ex)
         {
-            Console.WriteLine($"Ошибка при добавлении аккаунта: {ex.Message}");
+            throw new ArgumentException($"Ошибка при добавлении аккаунта: {ex.Message}");
         }
+    }
+
+    public Account GetAccount(Client client, string currencyCode)
+    {
+        return _clientStorage.GetAccount(client, currencyCode);
     }
     
     public void UpdateAccount(Client client, decimal ammount, string currencyCode, Currency[] currencies)
     {
-        var clientOne = _clientStorage.GetClient(client);
+        var clientOne = _clientStorage.Get(new SearchRequest { NumPassport = client.NumPassport }).First();
         try
         {
             if (clientOne == null)
                 throw new EntityNotFoundException(nameof(client));
             if (ValidateCurrency(currencyCode, currencies))
             {
-                var account = clientOne.Value.Value.First(a => a.Currency.Code == currencyCode);
                 if (ammount < 0)
                     throw new ArgumentOutOfRangeException(nameof(ammount),
                         "Сумма на счету не может быть меньше нуля.");
-                account.Ammount = ammount;
-                _clientStorage.UpdateClientAccounts(client, clientOne.Value.Value);
+                _clientStorage.UpdateAccount(clientOne, ammount, currencyCode);
             }
         }
         catch (Exception ex)
         {
-            Console.WriteLine($"Ошибка при обновлении аккаунта: {ex.Message}");
+            throw new ArgumentException($"Ошибка при обновлении аккаунта: {ex.Message}");
         }
     }
 
-    public Dictionary<Client, Account[]> FilterClients(SearchRequest searchRequest)
+    public List<Client> FilterClients(SearchRequest searchRequest)
     {
-        var clients = _clientStorage.GetAllClients();
-        IEnumerable<KeyValuePair<Client,Account[]>> request = clients;
-        if (!string.IsNullOrWhiteSpace(searchRequest.Name))
-        {
-            request = request.Where(c => c.Key.Name == searchRequest.Name);
-        }
-
-        if (!string.IsNullOrWhiteSpace(searchRequest.Surname))
-        {
-            request = request.Where(c => c.Key.Surname == searchRequest.Surname);
-        }
-
-        if (!string.IsNullOrWhiteSpace(searchRequest.Phone))
-        {
-            request = request.Where(c => c.Key.Phone == searchRequest.Phone);
-        }
-
-        if (!string.IsNullOrWhiteSpace(searchRequest.NumPassport))
-        {
-            request = request.Where(c => c.Key.NumPassport == searchRequest.NumPassport);
-        }
-
-        if (searchRequest.DateStart != null && searchRequest.DateEnd != null &&
-            searchRequest.DateStart <= searchRequest.DateEnd)
-        {
-            request = request.Where(c => 
-                c.Key.DateBirthday >= searchRequest.DateStart && c.Key.DateBirthday <= searchRequest.DateEnd); 
-        }
-        return request.ToDictionary();
+        var filteredClients = _clientStorage.Get(searchRequest);
+        return filteredClients;
     }
-    public bool ValidateCurrency(string currencyCode, Currency[] currencies)
+
+    private static bool ValidateCurrency(string currencyCode, Currency[] currencies)
     {
         if (string.IsNullOrWhiteSpace(currencyCode))
         {
@@ -119,7 +97,7 @@ public class ClientService
         
         return true;
     }
-    private bool ValidateAccount(Account[] accountsArray)
+    private static bool ValidateAccount(Account[] accountsArray)
     {
         foreach (var account in accountsArray)
         {
@@ -132,31 +110,31 @@ public class ClientService
         return true;
     }
 
-    private bool ValidateAddClient(KeyValuePair<Client, Account[]> client)
+    private static bool ValidateAddClient(Client client)
     {
-        if (string.IsNullOrWhiteSpace(client.Key.Name))
+        if (string.IsNullOrWhiteSpace(client.Name))
         {
-            throw new ArgumentException("Имя не может быть null, пустым или состоять только из пробелов.", nameof(client.Key.Name));
+            throw new ArgumentException("Имя не может быть null, пустым или состоять только из пробелов.", nameof(client.Name));
         }
 
-        if (string.IsNullOrWhiteSpace(client.Key.Name))
+        if (string.IsNullOrWhiteSpace(client.Name))
         {
-            throw new ArgumentException("Фамиилия не может быть null, пустой или состоять только из пробелов.", nameof(client.Key.Surname));
+            throw new ArgumentException("Фамиилия не может быть null, пустой или состоять только из пробелов.", nameof(client.Surname));
         }
 
-        if (string.IsNullOrWhiteSpace(client.Key.NumPassport))
+        if (string.IsNullOrWhiteSpace(client.NumPassport))
         {
-            throw new ArgumentException("Номер паспорта не может быть null, пустым или состоять только из пробелов.", nameof(client.Key.NumPassport));
+            throw new ArgumentException("Номер паспорта не может быть null, пустым или состоять только из пробелов.", nameof(client.NumPassport));
         }
 
-        if (client.Key.Age < 18)
+        if (client.Age < 18)
         {
-            throw new PersonAgeException(client.Key.Age);
+            throw new PersonAgeException(client.Age);
         }
 
-        if (client.Key.Age <= 0)
+        if (client.Age <= 0)
         {
-            throw new ArgumentOutOfRangeException(nameof(client.Key.Age), "Возраст должен быть положительным.");
+            throw new ArgumentOutOfRangeException(nameof(client.Age), "Возраст должен быть положительным.");
         }
 
         return true;
