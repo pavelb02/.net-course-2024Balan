@@ -99,7 +99,7 @@ public class ClientStorage : IClientStorage
         }
     }
 
-    public void AddAccount(Client client, Account[] accounts)
+    public void AddAccounts(Client client, Account[] accounts)
     {
         Clients[client] = Clients[client].Concat(accounts).ToArray();
     }

@@ -24,7 +24,7 @@ public class ClientService
                     _clientStorage.Add(client.Key);
                     if (ValidateAccount(client.Value))
                     {
-                        _clientStorage.AddAccount(client.Key, client.Value);
+                        _clientStorage.AddAccounts(client.Key, client.Value);
                     }
                 }
             }
@@ -43,7 +43,7 @@ public class ClientService
             if (clientOne == null)
                 throw new EntityNotFoundException(nameof(client));
             if (ValidateAccount(accounts))
-                _clientStorage.AddAccount(clientOne, accounts); 
+                _clientStorage.AddAccounts(clientOne, accounts); 
         }
         catch (Exception ex)
         {
