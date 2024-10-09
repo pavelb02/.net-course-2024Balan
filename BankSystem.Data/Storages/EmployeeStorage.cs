@@ -77,14 +77,7 @@ public class EmployeeStorage : IEmployeeStorage
 
     public void Delete(Employee employee)
     {
-        if (Employees.Contains(employee))
-        {
-            Employees.Remove(employee);
-        }
-        else
-        {
-            throw new EntityNotFoundException("Сотрудник не найден.");
-        }
+        Employees.Remove(employee);
     }
     public Employee? SearchYoungEmployee()
     {

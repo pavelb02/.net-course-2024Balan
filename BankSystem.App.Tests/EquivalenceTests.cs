@@ -117,7 +117,7 @@ public class EquivalenceTests
         var clientsBankDictionaryAccount =
             testDataGenerator.GenerateClientsBankDictionaryMultiAccount(clientsBankList);
         _clientService.AddClient(clientsBankDictionaryAccount);
-        _clientService.AddAccount(clientsBankDictionaryAccount.Keys.First(), account);
+        _clientService.AddAccounts(clientsBankDictionaryAccount.Keys.First(), account);
         //Act
         var result = _clientService.GetAccount(clientsBankDictionaryAccount.Keys.First(),account[0].Currency.Code);
         //Assert
@@ -133,7 +133,7 @@ public class EquivalenceTests
         var clientsBankDictionaryAccount =
             testDataGenerator.GenerateClientsBankDictionaryMultiAccount(clientsBankList);
         _clientService.AddClient(clientsBankDictionaryAccount);
-        _clientService.AddAccount(clientsBankDictionaryAccount.Keys.First(), account);
+        _clientService.AddAccounts(clientsBankDictionaryAccount.Keys.First(), account);
         _clientService.UpdateAccount(clientsBankDictionaryAccount.Keys.First(), 205m, "EUR", currencies);
         //Act
         var result = _clientService.GetAccount(clientsBankDictionaryAccount.Keys.First(),account[0].Currency.Code);

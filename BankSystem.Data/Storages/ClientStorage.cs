@@ -90,13 +90,7 @@ public class ClientStorage : IClientStorage
 
     public void Delete(Client client)
     {
-        if (Clients.ContainsKey(client))
-        {
-            Clients.Remove(client);        }
-        else
-        {
-            throw new EntityNotFoundException("Клиент не найден.");
-        }
+        Clients.Remove(client);      
     }
 
     public void AddAccounts(Client client, Account[] accounts)
@@ -137,14 +131,6 @@ public class ClientStorage : IClientStorage
             {
                 Clients[client] = accounts.Where(a => a != account).ToArray();
             }
-            else
-            {
-                throw new EntityNotFoundException("Аккаунт не найден.");
-            }
-        }
-        else
-        {
-            throw new EntityNotFoundException("Клиент не найден.");
         }
     }
     

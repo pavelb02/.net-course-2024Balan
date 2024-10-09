@@ -35,7 +35,7 @@ public class ClientService
         }
     }
 
-    public void AddAccount(Client client, Account[] accounts)
+    public void AddAccounts(Client client, Account[] accounts)
     {
         var clientOne = _clientStorage.Get(new SearchRequest { NumPassport = client.NumPassport}).First();
         try
