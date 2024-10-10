@@ -1,8 +1,11 @@
-﻿using BankSystem.Domain.Models;
+﻿using BankSystem.App.Exeptions;
+using BankSystem.App.Interfaces;
+using BankSystem.App.Services;
+using BankSystem.Domain.Models;
 
 namespace BankSystem.Data.Storages;
 
-public class ClientStorage
+public class ClientStorage : IClientStorage
 {
     private Dictionary<Client, Account[]> Clients { get; set; }
 
@@ -14,18 +17,7 @@ public class ClientStorage
     {
         return new Dictionary<Client, Account[]>(Clients);
     }
-    public KeyValuePair<Client, Account[]>? GetClient(Client client)
-    {
-        if (Clients.TryGetValue(client, out var accounts))
-        {
-            return new KeyValuePair<Client, Account[]>(client, accounts);
-        }
-        return null;
-    }
-    public void UpdateClientAccounts(Client client, Account[] accounts)
-    {
-        Clients[client] = accounts;
-    }
+
     public void AddClientToCollection(Dictionary<Client, Account[]> clients)
     {
         foreach (var client in clients)
@@ -33,14 +25,115 @@ public class ClientStorage
             Clients.Add(client.Key, client.Value);
         }
     }
-    public void UpdateCollection(Dictionary<Client, Account[]> clients)
+    
+    public void Add(Client client)
     {
-      foreach (var client in clients)
-      {
-          Clients[client.Key] = client.Value;
-      }
+        if (Clients.Any(c => c.Key.ClientId == client.ClientId))
+        {
+            throw new InvalidOperationException($"Клиент с ID {client.ClientId} уже добавлен.");
+        }
+
+        Clients.Add(client, new Account[] { });
     }
 
+    public List<Client> Get(SearchRequest searchRequest)
+    {
+        IEnumerable<Client> request = Clients.Keys;
+        if (!string.IsNullOrWhiteSpace(searchRequest.Name))
+        {
+            request = request.Where(c => c.Name == searchRequest.Name);
+        }
+
+        if (!string.IsNullOrWhiteSpace(searchRequest.Surname))
+        {
+            request = request.Where(c => c.Surname == searchRequest.Surname);
+        }
+
+        if (!string.IsNullOrWhiteSpace(searchRequest.Phone))
+        {
+            request = request.Where(c => c.Phone == searchRequest.Phone);
+        }
+
+        if (!string.IsNullOrWhiteSpace(searchRequest.NumPassport))
+        {
+            request = request.Where(c => c.NumPassport == searchRequest.NumPassport);
+        }
+
+        if (searchRequest.DateStart != null && searchRequest.DateEnd != null &&
+            searchRequest.DateStart <= searchRequest.DateEnd)
+        {
+            request = request.Where(c => 
+                c.DateBirthday >= searchRequest.DateStart && c.DateBirthday <= searchRequest.DateEnd); 
+        }
+        return request.ToList();
+    }
+
+    public void Update(Client client)
+    {
+        var oldClients = Clients.FirstOrDefault(c => c.Key.ClientId == client.ClientId).Key;
+        
+        if (oldClients != null)
+        {
+            oldClients.Name = client.Name;
+            oldClients.Surname = client.Surname;
+            oldClients.Phone = client.Phone;
+            oldClients.NumPassport = client.NumPassport;
+            oldClients.DateBirthday = client.DateBirthday;
+            oldClients.AccountNumber = client.AccountNumber;
+            oldClients.Balance = client.Balance;
+        }
+        else
+        {
+            throw new EntityNotFoundException("Клиент не найден с данным ID: " + client.ClientId);
+        }
+    }
+
+    public void Delete(Client client)
+    {
+        Clients.Remove(client);      
+    }
+
+    public void AddAccounts(Client client, Account[] accounts)
+    {
+        Clients[client] = Clients[client].Concat(accounts).ToArray();
+    }
+    
+    public Account GetAccount(Client client, string currencyCode)
+    {
+        if (Clients.ContainsKey(client))
+        {
+            var account = Clients[client].FirstOrDefault(c=>c.Currency.Code == currencyCode);
+            if (account!=null)
+                return account;
+            throw new EntityNotFoundException("У клиента нет счета с валютой " + currencyCode);
+        }
+        throw new EntityNotFoundException("Клиент не найден.");
+    }
+
+    public void UpdateAccount(Client client, decimal ammount, string currencyCode)
+    {
+        var account = Clients[client].FirstOrDefault(c=>c.Currency.Code == currencyCode);
+        if (account!=null)
+            account.Ammount = ammount;
+        else
+        {
+            throw new EntityNotFoundException("У клиента нет счета с валютой " + currencyCode);
+        }
+    }
+
+    public void DeleteAccount(Client client, Account account)
+    {
+        if (Clients.ContainsKey(client))
+        {
+            var accounts = Clients[client];
+            
+            if (accounts.Contains(account))
+            {
+                Clients[client] = accounts.Where(a => a != account).ToArray();
+            }
+        }
+    }
+    
     public Client? SearchYoungClient()
     {
         return Clients.MinBy(c => c.Key.Age).Key;

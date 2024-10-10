@@ -1,69 +1,40 @@
 ﻿using System.Collections.Specialized;
 using BankSystem.App.Exeptions;
-using BankSystem.Data.Storages;
+using BankSystem.App.Interfaces;
 using BankSystem.Domain.Models;
 
 namespace BankSystem.App.Services;
 
 public class EmployeeService
 {
-    private EmployeeStorage _employeeStorage;
+    private readonly IEmployeeStorage _employeeStorage;
 
-    public EmployeeService(EmployeeStorage employeeStorage)
+    public EmployeeService(IEmployeeStorage employeeStorage)
     {
         _employeeStorage = employeeStorage;
     }
 
     public void AddEmployee(List<Employee> employees)
     {
-        var employeesCorrect = new List<Employee>();
         foreach (var employee in employees)
         {
             try
             {
                 if (ValidateAddEmployee(employee))
-                    employeesCorrect.Add(employee);
+                    _employeeStorage.Add(employee);
             }
             catch (Exception ex)
             {
-                Console.WriteLine($"Ошибка при добавлении сотрудника: {ex.Message}");
+                throw new ArgumentException($"Ошибка при добавлении сотрудника: {ex.Message}");
             }
         }
-
-        _employeeStorage.AddEmployeeToCollection(employeesCorrect);
     }
     public List<Employee> FilterEmployees(SearchRequest searchRequest)
     {
-        var employees = _employeeStorage.GetAllEmployees();
-        if (!string.IsNullOrWhiteSpace(searchRequest.Name))
-        {
-            employees = employees.Where(e => e.Name == searchRequest.Name).ToList();
-        }
-
-        if (!string.IsNullOrWhiteSpace(searchRequest.Surname))
-        {
-            employees = employees.Where(e => e.Surname == searchRequest.Surname).ToList();
-        }
-
-        if (!string.IsNullOrWhiteSpace(searchRequest.Phone))
-        {
-            employees = employees.Where(e => e.Phone == searchRequest.Phone).ToList();
-        }
-
-        if (!string.IsNullOrWhiteSpace(searchRequest.NumPassport))
-        {
-            employees = employees.Where(e => e.NumPassport == searchRequest.NumPassport).ToList();
-        }
-
-        if (searchRequest.DateStart != null && searchRequest.DateEnd != null &&
-            searchRequest.DateStart <= searchRequest.DateEnd)
-        {
-            employees = employees.Where(e => 
-                e.DateBirthday >= searchRequest.DateStart && e.DateBirthday <= searchRequest.DateEnd).ToList(); 
-        }
-        return employees;
+        var filteredEmployees = _employeeStorage.Get(searchRequest);
+        return filteredEmployees;
     }
-    private bool ValidateAddEmployee(Employee employee)
+    private static bool ValidateAddEmployee(Employee employee)
     {
         if (string.IsNullOrWhiteSpace(employee.Name))
         {

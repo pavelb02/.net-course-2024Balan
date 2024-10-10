@@ -6,7 +6,7 @@ namespace BankSystem.Data.Tests;
 
 public class ClientStorageTests
 {
-    ClientStorage clientStorage = new ClientStorage();
+    ClientStorage _clientStorage = new ClientStorage();
     TestDataGenerator testDataGenerator = new TestDataGenerator();
     [Fact]
     public void AddClientToCollectionPositiv()
@@ -15,10 +15,10 @@ public class ClientStorageTests
         var clientsBankList = testDataGenerator.GenerateClientsBankList(10);
         var clientsBankDictionaryAccount = testDataGenerator.GenerateClientsBankDictionaryMultiAccount(clientsBankList);
         //Act
-        clientStorage.AddClientToCollection(clientsBankDictionaryAccount);
+        _clientStorage.AddClientToCollection(clientsBankDictionaryAccount);
         //Assert
-        Assert.NotNull(clientStorage.GetAllClients());
-        Assert.True(clientStorage.GetAllClients().SequenceEqual(clientsBankDictionaryAccount));
+        Assert.NotNull(_clientStorage.GetAllClients());
+        Assert.True(_clientStorage.GetAllClients().SequenceEqual(clientsBankDictionaryAccount));
     }
     [Fact]
     public void SearchYoungClientPositiv()
@@ -26,11 +26,11 @@ public class ClientStorageTests
         //Arrange
         var clientsBankList = testDataGenerator.GenerateClientsBankList(10);
         var clientsBankDictionaryAccount = testDataGenerator.GenerateClientsBankDictionaryMultiAccount(clientsBankList);
-        clientStorage.AddClientToCollection(clientsBankDictionaryAccount);
+        _clientStorage.AddClientToCollection(clientsBankDictionaryAccount);
         
         var youngClient = clientsBankDictionaryAccount.MinBy(c => c.Key.Age).Key;
         //Act
-        var youngClientMethod = clientStorage.SearchYoungClient();
+        var youngClientMethod = _clientStorage.SearchYoungClient();
         //Assert
         Assert.Equal(youngClient.Age, youngClientMethod.Age);
     }
@@ -40,11 +40,11 @@ public class ClientStorageTests
         //Arrange
         var clientsBankList = testDataGenerator.GenerateClientsBankList(10);
         var clientsBankDictionaryAccount = testDataGenerator.GenerateClientsBankDictionaryMultiAccount(clientsBankList);
-        clientStorage.AddClientToCollection(clientsBankDictionaryAccount);
+        _clientStorage.AddClientToCollection(clientsBankDictionaryAccount);
         
         var oldClient = clientsBankDictionaryAccount.MaxBy(c => c.Key.Age).Key;
         //Act
-        var oldClientMethod = clientStorage.SearchOldClient();
+        var oldClientMethod = _clientStorage.SearchOldClient();
         //Assert
         Assert.Equal(oldClient.Age, oldClientMethod.Age);
     }
@@ -54,11 +54,11 @@ public class ClientStorageTests
         //Arrange
         var clientsBankList = testDataGenerator.GenerateClientsBankList(10);
         var clientsBankDictionaryAccount = testDataGenerator.GenerateClientsBankDictionaryMultiAccount(clientsBankList);
-        clientStorage.AddClientToCollection(clientsBankDictionaryAccount);
+        _clientStorage.AddClientToCollection(clientsBankDictionaryAccount);
         
         var averageAgeClient = (int)clientsBankDictionaryAccount.Average(c => c.Key.Age);
         //Act
-        var averageAgeClientMethod = clientStorage.SearchAverageAgeClient();
+        var averageAgeClientMethod = _clientStorage.SearchAverageAgeClient();
         //Assert
         Assert.Equal(averageAgeClient, averageAgeClientMethod);
     }
@@ -66,7 +66,7 @@ public class ClientStorageTests
 
 public class EmployeeStorageTests
 {
-    EmployeeStorage employeeStorage = new EmployeeStorage();
+    EmployeeStorage _employeeStorage = new EmployeeStorage();
     TestDataGenerator testDataGenerator = new TestDataGenerator();
     string[] positions = { "Cashier", "Service Specialist", "Counselor", "Manager", "Bank Accountant", "Financial Analyst", "Auditor", "IT specialist" };
 
@@ -74,22 +74,25 @@ public class EmployeeStorageTests
     public void AddEmployeeToCollectionPositiv()
     {
         //Arrange
-        var employeesBankList = testDataGenerator.GenerateEmployeesBankList(10, positions);
+        var employeesBankList = testDataGenerator.GenerateEmployeesBankList(1, positions);
         //Act
-        employeeStorage.AddEmployeeToCollection(employeesBankList);
+        _employeeStorage.Add(employeesBankList.First());
         //Assert
-        Assert.NotNull(employeeStorage.GetAllEmployees());
-        Assert.True(employeeStorage.GetAllEmployees().SequenceEqual(employeesBankList));
+        Assert.NotNull(_employeeStorage.Get(new SearchRequest()));
+        Assert.True(_employeeStorage.Get(new SearchRequest()).SequenceEqual(employeesBankList));
     }
     [Fact]
     public void SearchYoungEmployeePositiv()
     {
         //Arrange
         var employeesBankList = testDataGenerator.GenerateEmployeesBankList(10, positions);
-        employeeStorage.AddEmployeeToCollection(employeesBankList);
+        foreach (var employee in employeesBankList)
+        {
+            _employeeStorage.Add(employee);
+        }
         var youngEmployee = employeesBankList.MinBy(c => c.Age);
         //Act
-        var youngEmployeeMethod = employeeStorage.SearchYoungEmployee();
+        var youngEmployeeMethod = _employeeStorage.SearchYoungEmployee();
         //Assert
         Assert.Equal(youngEmployee.Age, youngEmployeeMethod.Age);
     }
@@ -98,10 +101,13 @@ public class EmployeeStorageTests
     {
         //Arrange
         var employeesBankList = testDataGenerator.GenerateEmployeesBankList(10, positions);
-        employeeStorage.AddEmployeeToCollection(employeesBankList);
+        foreach (var employee in employeesBankList)
+        {
+            _employeeStorage.Add(employee);
+        }
         var oldEmployee = employeesBankList.MaxBy(c => c.Age);
         //Act
-        var oldEmployeeMethod = employeeStorage.SearchOldEmployee();
+        var oldEmployeeMethod = _employeeStorage.SearchOldEmployee();
         //Assert
         Assert.Equal(oldEmployee.Age, oldEmployeeMethod.Age);
     }
@@ -110,10 +116,13 @@ public class EmployeeStorageTests
     {
         //Arrange
         var employeesBankList = testDataGenerator.GenerateEmployeesBankList(10, positions);
-        employeeStorage.AddEmployeeToCollection(employeesBankList);
+        foreach (var employee in employeesBankList)
+        {
+            _employeeStorage.Add(employee);
+        }
         var averageAgeEmployee = (int)employeesBankList.Average(c => c.Age);
         //Act
-        var averageAgeEmployeeMethod = employeeStorage.SearchAverageAgeEmployee();
+        var averageAgeEmployeeMethod = _employeeStorage.SearchAverageAgeEmployee();
         //Assert
         Assert.Equal(averageAgeEmployee, averageAgeEmployeeMethod);
     }
