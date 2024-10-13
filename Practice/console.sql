@@ -14,6 +14,51 @@ create unique index account_account_id_uindex
 */
 
 /*
+create table client
+(
+    client_id         uuid            not null
+        constraint client_pk
+            primary key,
+    name              text            not null,
+    surname           text            not null,
+    number_passport   text            not null,
+    phone             text            not null,
+    "account_number " text,
+    "balance "        money default 0 not null,
+    date_birthday     date            not null
+);
+
+alter table client
+    owner to postgres;
+
+create unique index client_client_id_uindex
+    on client (client_id);
+*/
+
+/*
+create table employee
+(
+    employee_id     uuid              not null
+        constraint employee_pk
+            primary key,
+    name            text              not null,
+    surname         text              not null,
+    number_passport text              not null,
+    phone           text              not null,
+    position        text              not null,
+    salary          integer default 0 not null,
+    date_start      date              not null,
+    date_birthday   date              not null
+);
+
+alter table employee
+    owner to postgres;
+
+create unique index employee_employee_id_uindex
+    on employee (employee_id);
+*/
+
+/*
 INSERT INTO client (client_id, name, surname, number_passport, phone, "account_number ", "balance ", date_birthday )
 VALUES
 (uuid_generate_v4(), 'John', 'Doe', 'AB1234567', '+1234567890', 'ACC1234567', 1000, '1990-01-01'),
@@ -88,18 +133,11 @@ VALUES
 
 --select client.name, client.surname, account.account_id from client join account on client.client_id = account.client_id order by name, surname;
 
-/*
-alter table client add age int;
-update client set age = extract(year from age(date_birthday));
-alter table employee add age int;
-update employee set age = extract(year from age(date_birthday));
- */
-
 --select * from client order by "age" desc;
 --select * from client order by date_birthday;
 
---select sum(count_equal_age) from (select age, count(*) as count_equal_age from client group by age having count(*)>1);
+--select sum(count_equal_age) from (select extract(year from age(date_birthday)), count(*) as count_equal_age from client group by extract(year from age(date_birthday)) having count(*)>=2);
 
---select age, COUNT(*) as count_clients from client group by age order by age;
+--select extract(year from age(date_birthday)), COUNT(*) as count_clients from client group by extract(year from age(date_birthday)) order by extract(year from age(date_birthday));
 
 --select * from client limit 3;
