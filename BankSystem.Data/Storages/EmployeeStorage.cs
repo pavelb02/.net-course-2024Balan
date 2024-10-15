@@ -5,27 +5,31 @@ using BankSystem.Domain.Models;
 
 namespace BankSystem.Data.Storages;
 
-public class EmployeeStorage : IEmployeeStorage
+public class EmployeeStorage : IStorage<Employee, SearchRequest>
 {
-    private List<Employee> Employees { get; set; }
+
+    private BankSystemDbContext _dbContext;
     public EmployeeStorage()
     {
-        Employees = new List<Employee>();
+        _dbContext = new BankSystemDbContext();
     }
     
     public void Add(Employee employee)
     {
-        if (Employees.Any(e => e.EmployeeId == employee.EmployeeId))
-        {
-            throw new InvalidOperationException($"Сотрудник с ID {employee.EmployeeId} уже добавлен.");
-        }
+        if (_dbContext.Employees.Any(e => e.Id == employee.Id))
+            return;
 
-        Employees.Add(employee);
+        _dbContext.Employees.Add(employee);
     }
 
-    public List<Employee> Get(SearchRequest searchRequest)
+    public Employee GetById(Guid employeeId)
     {
-        IEnumerable<Employee> employees = Employees;
+        return _dbContext.Employees.FirstOrDefault(e => e.Id == employeeId);
+    }
+
+    public List<Employee> GetCollection(SearchRequest searchRequest)
+    {
+        IEnumerable<Employee> employees = _dbContext.Employees;
         if (!string.IsNullOrWhiteSpace(searchRequest.Name))
         {
             employees = employees.Where(e => e.Name == searchRequest.Name);
@@ -55,40 +59,42 @@ public class EmployeeStorage : IEmployeeStorage
         return employees.ToList();
     }
 
-    public void Update(Employee employee)
+    public void Update(Guid employeeId, Employee employee)
     {
-        var oldEmployee = Employees.FirstOrDefault(e => e.EmployeeId == employee.EmployeeId);
-    
-        if (oldEmployee != null)
-        {
-            oldEmployee.Name = employee.Name;
-            oldEmployee.Surname = employee.Surname;
-            oldEmployee.Phone = employee.Phone;
-            oldEmployee.NumPassport = employee.NumPassport;
-            oldEmployee.DateBirthday = employee.DateBirthday;
-            oldEmployee.Position = employee.Position;
-            oldEmployee.Salary = employee.Salary;
-        }
-        else
-        {
-            throw new EntityNotFoundException("Сотрудник не найден с данным ID: " + employee.EmployeeId);
-        }
+        var updateEmployee = _dbContext.Employees.FirstOrDefault(e => e.Id == employeeId);
+
+        if (updateEmployee == null) return;
+        
+        updateEmployee.Name = employee.Name;
+        updateEmployee.Surname = employee.Surname;
+        updateEmployee.Phone = employee.Phone;
+        updateEmployee.NumPassport = employee.NumPassport;
+        updateEmployee.DateBirthday = employee.DateBirthday;
+        updateEmployee.Position = employee.Position;
+        updateEmployee.Salary = employee.Salary;
+        
+        _dbContext.SaveChanges();
     }
 
-    public void Delete(Employee employee)
+    public void Delete(Guid employeeId)
     {
-        Employees.Remove(employee);
+        var employee = _dbContext.Employees.FirstOrDefault(e => e.Id == employeeId);
+        if (employee == null) return;
+        _dbContext.Employees.Remove(employee);
+        
+        _dbContext.SaveChanges();
     }
+    
     public Employee? SearchYoungEmployee()
     {
-        return Employees.MinBy(c => c.Age);
+        return _dbContext.Employees.MinBy(c => c.Age);
     }
     public Employee? SearchOldEmployee()
     {
-        return Employees.MaxBy(c => c.Age);
+        return _dbContext.Employees.MaxBy(c => c.Age);
     }
-    public int? SearchAverageAgeEmployee()
+    public int SearchAverageAgeEmployee()
     {
-        return (int)Employees.Average(c => c.Age);
+        return (int)_dbContext.Employees.Average(c => c.Age);
     }
 }

@@ -2,7 +2,6 @@ namespace BankSystem.Domain.Models;
 
 public class Employee : Person
 {
-    public Guid EmployeeId { get; set; }
     public string Position { get; set; }
     public DateTime StartDate { get; set; }
     public int Salary { get; set; }
@@ -12,7 +11,6 @@ public class Employee : Person
         DateTime startDate, int salary, DateTime dateBirthday)
         : base(name, surname, numPassport, age, phone, dateBirthday)
     {
-        EmployeeId = Guid.NewGuid();
         Position = position;
         StartDate = startDate;
         Salary = salary;

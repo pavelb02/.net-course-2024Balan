@@ -2,7 +2,7 @@
 
 namespace BankSystem.Domain.Models;
 
-public struct Currency
+public class Currency
 {
     public string Code { get; set; } // Код валюты (USD, EUR, RUB)
     public string Name { get; set; } // Название валюты (доллар США, евро, российский рубль)

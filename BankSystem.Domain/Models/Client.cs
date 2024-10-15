@@ -5,15 +5,29 @@ public class Client : Person
     public Guid ClientId { get; set; }
     public string AccountNumber { get; set; }
     public decimal Balance { get; set; }
+    public ICollection<Account> Accounts { get; set; }
     public Client(string name, string surname, string numPassport, int age, string phone, string accountNumber, decimal balance, DateTime dateBirthday)
         : base(name, surname, numPassport, age, phone, dateBirthday)
     {
-        ClientId = Guid.NewGuid();
         AccountNumber = accountNumber;
         Balance = balance;
+        Accounts = new List<Account>
+        {
+            new Account(0, ClientId, this)
+        };
     }
 
-    public Client() { }
+    public Client()
+    {
+        Accounts = new List<Account>
+        {
+            new Account(0, ClientId, this)
+        };
+    }
+    public Client(Guid clientId)
+    {
+        Id = clientId;
+    }
 
     public override bool Equals(object? obj)
     {

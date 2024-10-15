@@ -80,31 +80,26 @@ public class EquivalenceTests
     }
 
     [Fact]
-    public void AddClientPositiveDictionaryTest()
+    public void AddClientPositiveListTest()
     {
         //Arrange
         var clientsBankList = testDataGenerator.GenerateClientsBankList(10);
-        var clientsBankDictionaryAccount =
-            testDataGenerator.GenerateClientsBankDictionaryMultiAccount(clientsBankList);
-        _clientService.AddClient(clientsBankDictionaryAccount);
+       _clientService.AddClients(clientsBankList);
         //Act
-        var clients = _clientStorage.Get(new SearchRequest());
+        var clients = _clientStorage.GetCollection(new SearchRequest());
         //Assert
         Assert.Equal(clients, clientsBankList);
-        //Assert.Throws<ClientNotFoundException>(() => clientService.AddClient(clientsBankDictionaryAccount));
     }
     [Fact]
-    public void AddClientNegativeDictionaryTest()
+    public void AddClientNegativeListTest()
     {
         //Arrange
         var clientsBankList = testDataGenerator.GenerateClientsBankList(10);
         clientsBankList.First().Name = "";
-        var clientsBankDictionaryAccount =
-            testDataGenerator.GenerateClientsBankDictionaryMultiAccount(clientsBankList);
         //Act
-        //_clientService.AddClient(clientsBankDictionaryAccount);     
+        _clientService.AddClients(clientsBankList);     
         //Assert
-        Assert.Throws<ArgumentException>(() => _clientService.AddClient(clientsBankDictionaryAccount));
+        Assert.Throws<Exception>(() => _clientService.AddClients(clientsBankList));
         
     }
 
@@ -114,31 +109,29 @@ public class EquivalenceTests
         //Arrange
         var account = testDataGenerator.GenerateAccountsArray(1, "EUR");
         var clientsBankList = testDataGenerator.GenerateClientsBankList(10);
-        var clientsBankDictionaryAccount =
-            testDataGenerator.GenerateClientsBankDictionaryMultiAccount(clientsBankList);
-        _clientService.AddClient(clientsBankDictionaryAccount);
-        _clientService.AddAccounts(clientsBankDictionaryAccount.Keys.First(), account);
+        _clientService.AddClients(clientsBankList);
+        _clientService.AddAccount(clientsBankList.First().Id, account[0]);
         //Act
-        var result = _clientService.GetAccount(clientsBankDictionaryAccount.Keys.First(),account[0].Currency.Code);
+        var result = _clientService.GetClient(clientsBankList.First().Id).Accounts.FirstOrDefault(account[0]);
         //Assert
         Assert.Equal(account[0], result);
     }
 
     [Fact]
-    public void UpdateAccountPositiveTest()
+    public void UpdateClientPositiveTest()
     {
         //Arrange
-        var account = testDataGenerator.GenerateAccountsArray(1, "EUR");
         var clientsBankList = testDataGenerator.GenerateClientsBankList(10);
-        var clientsBankDictionaryAccount =
-            testDataGenerator.GenerateClientsBankDictionaryMultiAccount(clientsBankList);
-        _clientService.AddClient(clientsBankDictionaryAccount);
-        _clientService.AddAccounts(clientsBankDictionaryAccount.Keys.First(), account);
-        _clientService.UpdateAccount(clientsBankDictionaryAccount.Keys.First(), 205m, "EUR", currencies);
+        _clientService.AddClients(clientsBankList);
+        var newClient = new Client(clientsBankList.First().Id);
+        newClient.Name = "Pavlik";
+        newClient.Surname = "Balan";
+        newClient.Phone = "+37368523915";
+        _clientService.UpdateClient(clientsBankList.First().Id, newClient);
         //Act
-        var result = _clientService.GetAccount(clientsBankDictionaryAccount.Keys.First(),account[0].Currency.Code);
+        var result = _clientService.GetClient(clientsBankList.First().Id);
         //Assert
-        Assert.Equal(205m, result.Ammount);
+        Assert.Equal(result, newClient);
     }
 
     [Fact]
@@ -146,9 +139,7 @@ public class EquivalenceTests
     {
         //Arrange
         var clientsBankList = testDataGenerator.GenerateClientsBankList(10);
-        var clientsBankDictionaryAccount =
-            testDataGenerator.GenerateClientsBankDictionaryMultiAccount(clientsBankList);
-        _clientService.AddClient(clientsBankDictionaryAccount);
+        _clientService.AddClients(clientsBankList);
         var searchRequest = new SearchRequest { NumPassport = clientsBankList[0].NumPassport };
         //Act
         var filteredClients =  _clientService.FilterClients(searchRequest);
@@ -162,9 +153,9 @@ public class EquivalenceTests
     {
         //Arrange
         var employeesBankList = testDataGenerator.GenerateEmployeesBankList(10, positions);
-        _employeeService.AddEmployee(employeesBankList);
+        _employeeService.AddEmployees(employeesBankList);
         //Act
-        var employee = _employeeStorage.Get(new SearchRequest());
+        var employee = _employeeStorage.GetCollection(new SearchRequest());
         //Assert
         Assert.Equal(employee, employeesBankList);
     }
@@ -174,7 +165,7 @@ public class EquivalenceTests
     {
         //Arrange
         var employeesBankList = testDataGenerator.GenerateEmployeesBankList(10, positions);
-        _employeeService.AddEmployee(employeesBankList);
+        _employeeService.AddEmployees(employeesBankList);
         var searchRequest = new SearchRequest { Name = employeesBankList[0].Name };
         //Act
         var filteredEmployees = _employeeService.FilterEmployees(searchRequest);

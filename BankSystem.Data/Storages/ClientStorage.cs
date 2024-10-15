@@ -7,38 +7,30 @@ namespace BankSystem.Data.Storages;
 
 public class ClientStorage : IClientStorage
 {
-    private Dictionary<Client, Account[]> Clients { get; set; }
+    private BankSystemDbContext _dbContext;
 
     public ClientStorage()
     {
-        Clients = new Dictionary<Client, Account[]>();
-    }
-    public Dictionary<Client, Account[]> GetAllClients()
-    {
-        return new Dictionary<Client, Account[]>(Clients);
+        _dbContext = new BankSystemDbContext();
     }
 
-    public void AddClientToCollection(Dictionary<Client, Account[]> clients)
-    {
-        foreach (var client in clients)
-        {
-            Clients.Add(client.Key, client.Value);
-        }
-    }
-    
     public void Add(Client client)
     {
-        if (Clients.Any(c => c.Key.ClientId == client.ClientId))
+        if (_dbContext.Clients.Any(c => c.ClientId == client.ClientId))
         {
-            throw new InvalidOperationException($"Клиент с ID {client.ClientId} уже добавлен.");
+            throw new InvalidOperationException($"Клиент с ID {client.ClientId} уже существует.");
         }
-
-        Clients.Add(client, new Account[] { });
+        _dbContext.Clients.Add(client);
     }
 
-    public List<Client> Get(SearchRequest searchRequest)
+    public Client GetById(Guid clientId)
     {
-        IEnumerable<Client> request = Clients.Keys;
+        return _dbContext.Clients.FirstOrDefault(c => c.Id == clientId);
+    }
+
+    public List<Client> GetCollection(SearchRequest searchRequest)
+    {
+        IEnumerable<Client> request = _dbContext.Clients;
         if (!string.IsNullOrWhiteSpace(searchRequest.Name))
         {
             request = request.Where(c => c.Name == searchRequest.Name);
@@ -68,82 +60,75 @@ public class ClientStorage : IClientStorage
         return request.ToList();
     }
 
-    public void Update(Client client)
+    public void Update(Guid clientId, Client client)
     {
-        var oldClients = Clients.FirstOrDefault(c => c.Key.ClientId == client.ClientId).Key;
+        var updateClient = _dbContext.Clients.FirstOrDefault(c => c.Id == clientId);
+        if (updateClient == null) return;
+
+        updateClient.Name = client.Name;
+        updateClient.Surname = client.Surname;
+        updateClient.NumPassport = client.NumPassport;
+        updateClient.Phone = client.Phone;
+        updateClient.DateBirthday = client.DateBirthday;
+        updateClient.Balance = client.Balance;
+        updateClient.AccountNumber = client.AccountNumber;
         
-        if (oldClients != null)
+        foreach (var oldAccount in updateClient.Accounts.ToList())
         {
-            oldClients.Name = client.Name;
-            oldClients.Surname = client.Surname;
-            oldClients.Phone = client.Phone;
-            oldClients.NumPassport = client.NumPassport;
-            oldClients.DateBirthday = client.DateBirthday;
-            oldClients.AccountNumber = client.AccountNumber;
-            oldClients.Balance = client.Balance;
-        }
-        else
-        {
-            throw new EntityNotFoundException("Клиент не найден с данным ID: " + client.ClientId);
-        }
-    }
-
-    public void Delete(Client client)
-    {
-        Clients.Remove(client);      
-    }
-
-    public void AddAccounts(Client client, Account[] accounts)
-    {
-        Clients[client] = Clients[client].Concat(accounts).ToArray();
-    }
-    
-    public Account GetAccount(Client client, string currencyCode)
-    {
-        if (Clients.ContainsKey(client))
-        {
-            var account = Clients[client].FirstOrDefault(c=>c.Currency.Code == currencyCode);
-            if (account!=null)
-                return account;
-            throw new EntityNotFoundException("У клиента нет счета с валютой " + currencyCode);
-        }
-        throw new EntityNotFoundException("Клиент не найден.");
-    }
-
-    public void UpdateAccount(Client client, decimal ammount, string currencyCode)
-    {
-        var account = Clients[client].FirstOrDefault(c=>c.Currency.Code == currencyCode);
-        if (account!=null)
-            account.Ammount = ammount;
-        else
-        {
-            throw new EntityNotFoundException("У клиента нет счета с валютой " + currencyCode);
-        }
-    }
-
-    public void DeleteAccount(Client client, Account account)
-    {
-        if (Clients.ContainsKey(client))
-        {
-            var accounts = Clients[client];
-            
-            if (accounts.Contains(account))
+            if (client.Accounts.All(a => a.Id != oldAccount.Id))
             {
-                Clients[client] = accounts.Where(a => a != account).ToArray();
+                _dbContext.Accounts.Remove(oldAccount);
             }
         }
+        
+        foreach (var account in client.Accounts)
+        {
+            var existingAccount = updateClient.Accounts.FirstOrDefault(a => a.Id == account.Id);
+            if (existingAccount != null)
+            {
+                existingAccount.Amount = account.Amount;
+            }
+            else
+            {
+                updateClient.Accounts.Add(account);
+                account.ClientId = updateClient.Id;
+            }
+        }
+        _dbContext.SaveChanges();
     }
-    
+
+    public void Delete(Guid clientId)
+    {
+        var client = _dbContext.Clients.FirstOrDefault(c => c.Id == clientId);
+        if (client == null) return;
+        _dbContext.Clients.Remove(client);
+        
+        _dbContext.SaveChanges();
+    }
+    public void AddAccount(Guid clientId, Account account)
+    {
+        var client = _dbContext.Clients.FirstOrDefault(c => c.Id == clientId);
+        client?.Accounts.Add(account);
+    }
+
+    public void DeleteAccount(Guid clientId, Guid accountId)
+    {
+        var client = _dbContext.Clients.FirstOrDefault(c => c.Id == clientId);
+        var account = client?.Accounts.FirstOrDefault(a => a.Id == accountId);
+        if (client != null && account != null)
+            client.Accounts.Remove(account);
+    }
+
     public Client? SearchYoungClient()
     {
-        return Clients.MinBy(c => c.Key.Age).Key;
+        return _dbContext.Clients.MinBy(c => c.Age);
     }
     public Client? SearchOldClient()
     {
-        return Clients.MaxBy(c => c.Key.Age).Key;
+        return _dbContext.Clients.MaxBy(c => c.Age);
     }
-    public int? SearchAverageAgeClient()
+    public int SearchAverageAgeClient()
     {
-        return (int)Clients.Average(c => c.Key.Age);
+        return (int)_dbContext.Clients.Average(c => c.Age);
     }
 }

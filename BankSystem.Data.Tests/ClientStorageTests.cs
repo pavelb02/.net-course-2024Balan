@@ -9,26 +9,26 @@ public class ClientStorageTests
     ClientStorage _clientStorage = new ClientStorage();
     TestDataGenerator testDataGenerator = new TestDataGenerator();
     [Fact]
-    public void AddClientToCollectionPositiv()
+    public void AddClientPositiv()
     {
         //Arrange
-        var clientsBankList = testDataGenerator.GenerateClientsBankList(10);
-        var clientsBankDictionaryAccount = testDataGenerator.GenerateClientsBankDictionaryMultiAccount(clientsBankList);
+        var clientsBankList = testDataGenerator.GenerateClientsBankList(1);
         //Act
-        _clientStorage.AddClientToCollection(clientsBankDictionaryAccount);
+        _clientStorage.Add(clientsBankList.First());
         //Assert
-        Assert.NotNull(_clientStorage.GetAllClients());
-        Assert.True(_clientStorage.GetAllClients().SequenceEqual(clientsBankDictionaryAccount));
+        Assert.NotNull(_clientStorage.GetById(clientsBankList.First().Id));
     }
     [Fact]
     public void SearchYoungClientPositiv()
     {
         //Arrange
         var clientsBankList = testDataGenerator.GenerateClientsBankList(10);
-        var clientsBankDictionaryAccount = testDataGenerator.GenerateClientsBankDictionaryMultiAccount(clientsBankList);
-        _clientStorage.AddClientToCollection(clientsBankDictionaryAccount);
+        foreach (var client in clientsBankList)
+        {
+            _clientStorage.Add(client);
+        }
         
-        var youngClient = clientsBankDictionaryAccount.MinBy(c => c.Key.Age).Key;
+        var youngClient = clientsBankList.MinBy(c => c.Age);
         //Act
         var youngClientMethod = _clientStorage.SearchYoungClient();
         //Assert
@@ -39,10 +39,12 @@ public class ClientStorageTests
     {
         //Arrange
         var clientsBankList = testDataGenerator.GenerateClientsBankList(10);
-        var clientsBankDictionaryAccount = testDataGenerator.GenerateClientsBankDictionaryMultiAccount(clientsBankList);
-        _clientStorage.AddClientToCollection(clientsBankDictionaryAccount);
+        foreach (var client in clientsBankList)
+        {
+            _clientStorage.Add(client);
+        }
         
-        var oldClient = clientsBankDictionaryAccount.MaxBy(c => c.Key.Age).Key;
+        var oldClient = clientsBankList.MaxBy(c => c.Age);
         //Act
         var oldClientMethod = _clientStorage.SearchOldClient();
         //Assert
@@ -53,10 +55,12 @@ public class ClientStorageTests
     {
         //Arrange
         var clientsBankList = testDataGenerator.GenerateClientsBankList(10);
-        var clientsBankDictionaryAccount = testDataGenerator.GenerateClientsBankDictionaryMultiAccount(clientsBankList);
-        _clientStorage.AddClientToCollection(clientsBankDictionaryAccount);
+        foreach (var client in clientsBankList)
+        {
+            _clientStorage.Add(client);
+        }
         
-        var averageAgeClient = (int)clientsBankDictionaryAccount.Average(c => c.Key.Age);
+        var averageAgeClient = (int)clientsBankList.Average(c => c.Age);
         //Act
         var averageAgeClientMethod = _clientStorage.SearchAverageAgeClient();
         //Assert
@@ -78,8 +82,8 @@ public class EmployeeStorageTests
         //Act
         _employeeStorage.Add(employeesBankList.First());
         //Assert
-        Assert.NotNull(_employeeStorage.Get(new SearchRequest()));
-        Assert.True(_employeeStorage.Get(new SearchRequest()).SequenceEqual(employeesBankList));
+        Assert.NotNull(_employeeStorage.GetCollection(new SearchRequest()));
+        Assert.True(_employeeStorage.GetCollection(new SearchRequest()).SequenceEqual(employeesBankList));
     }
     [Fact]
     public void SearchYoungEmployeePositiv()

@@ -1,5 +1,4 @@
-﻿using System.Collections.Specialized;
-using BankSystem.App.Exeptions;
+﻿using BankSystem.App.Exeptions;
 using BankSystem.App.Interfaces;
 using BankSystem.Domain.Models;
 
@@ -7,14 +6,19 @@ namespace BankSystem.App.Services;
 
 public class EmployeeService
 {
-    private readonly IEmployeeStorage _employeeStorage;
+    private readonly IStorage<Employee, SearchRequest> _employeeStorage;
 
-    public EmployeeService(IEmployeeStorage employeeStorage)
+    public EmployeeService(IStorage<Employee, SearchRequest> employeeStorage)
     {
         _employeeStorage = employeeStorage;
     }
 
-    public void AddEmployee(List<Employee> employees)
+    public Employee GetEmployee(Guid employeeId)
+    {
+        return _employeeStorage.GetById(employeeId);
+    }
+
+    public void AddEmployees(List<Employee> employees)
     {
         foreach (var employee in employees)
         {
@@ -23,17 +27,47 @@ public class EmployeeService
                 if (ValidateAddEmployee(employee))
                     _employeeStorage.Add(employee);
             }
+            catch (ArgumentException ex)
+            {
+                throw new ArgumentException($"Ошибка при добавлении сотрудника: {ex.Message}", ex);
+            }
             catch (Exception ex)
             {
-                throw new ArgumentException($"Ошибка при добавлении сотрудника: {ex.Message}");
+                throw new Exception("Произошла непредвиденная ошибка при добавлении сотрудника.", ex);
             }
         }
     }
+
+    public void UpdateEmployee(Guid employeeId, Employee newEmployee)
+    {
+        try
+        {
+            if (ValidateAddEmployee(newEmployee))
+            {
+                _employeeStorage.Update(employeeId, newEmployee);
+            }
+        }
+        catch (ArgumentException ex)
+        {
+            throw new ArgumentException($"Ошибка при обновлении сторудника: {ex.Message}", ex);
+        }
+        catch (Exception ex)
+        {
+            throw new Exception("Произошла непредвиденная ошибка при обновлении сотрудника.", ex);
+        }
+    }
+
     public List<Employee> FilterEmployees(SearchRequest searchRequest)
     {
-        var filteredEmployees = _employeeStorage.Get(searchRequest);
+        var filteredEmployees = _employeeStorage.GetCollection(searchRequest);
         return filteredEmployees;
     }
+
+    public void DeleteEmployee(Guid employeeId)
+    {
+        _employeeStorage.Delete(employeeId);
+    }
+  
     private static bool ValidateAddEmployee(Employee employee)
     {
         if (string.IsNullOrWhiteSpace(employee.Name))
