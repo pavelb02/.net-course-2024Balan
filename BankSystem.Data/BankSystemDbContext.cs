@@ -1,6 +1,4 @@
-﻿using System.Net.Mime;
-using System.Security.AccessControl;
-using BankSystem.Data.EntityConfigurations;
+﻿using BankSystem.Data.EntityConfigurations;
 using BankSystem.Domain.Models;
 using Microsoft.EntityFrameworkCore;
 
@@ -23,12 +21,14 @@ public class BankSystemDbContext : DbContext
             "Host=localhost; Port=5432; Database=BankSystem; Username=postgres; Password=postgres");
     }
 
-    public void OnModelCreating(ModelBuilder modelBuilder)
+    protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         if (modelBuilder == null) throw new ArgumentException(nameof(modelBuilder));
         modelBuilder.ApplyConfiguration(new ClientEntityTypeConfiguration());
         modelBuilder.ApplyConfiguration(new EmployeeEntityTypeConfiguration());
         modelBuilder.ApplyConfiguration(new AccountEntityTypeConfiguration());
+        modelBuilder.ApplyConfiguration(new CurrencyEntityTypeConfiguration());
+        
         base.OnModelCreating(modelBuilder);
     }
 }

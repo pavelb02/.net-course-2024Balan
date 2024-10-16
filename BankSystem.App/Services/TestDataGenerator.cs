@@ -16,13 +16,14 @@ public class TestDataGenerator
             .RuleFor(x => x.Surname, (faker, _) => faker.Person.LastName)
             .RuleFor(x => x.NumPassport, (faker, _) => faker.Random.Int(100000, 999999).ToString())
             .RuleFor(x => x.Phone, (faker, _) => faker.Person.Phone)
-            .RuleFor(x => x.AccountNumber, (faker, _) => faker.Finance.Account(10))
             .RuleFor(x => x.Balance, (faker, _) => faker.Finance.Amount(100, 10000))
-            .RuleFor(x => x.DateBirthday, (faker, _) => faker.Date.Between(DateTime.Now.AddYears(-50), DateTime.Now.AddYears(-18)))
-            .RuleFor(x => x.Age, (faker, client) => CalculateAge(client.DateBirthday));;
-        
+            .RuleFor(x => x.DateBirthday, (faker, _) => 
+                DateTime.SpecifyKind(faker.Date.Between(DateTime.Now.AddYears(-50), DateTime.Now.AddYears(-18)), DateTimeKind.Utc))
+            .RuleFor(x => x.Age, (faker, client) => CalculateAge(client.DateBirthday));
+
         return faker.Generate(count);
     }
+    
     public Dictionary<string, Client> GenerateClientsBankDictionary(List<Client> clientsList)
     {
         var clientsDictionary = clientsList.ToDictionary(client => client.Phone);
@@ -84,13 +85,14 @@ public class TestDataGenerator
             .RuleFor(x => x.Phone, (faker, _) => faker.Person.Phone)
             .RuleFor(x => x.Position, (faker, _) => faker.PickRandom(positions))
             .RuleFor(x => x.Salary, (faker, _) => (int)faker.Finance.Amount(100, 10000))
-            .RuleFor(x => x.StartDate, (faker, _) => faker.Date.Past(15))
+            .RuleFor(x => x.StartDate, (faker, _) => 
+                DateTime.SpecifyKind(faker.Date.Past(15), DateTimeKind.Utc))
             .RuleFor(x => x.DateBirthday,
-                (faker, _) => faker.Date.Between(DateTime.Now.AddYears(-50), DateTime.Now.AddYears(-18)))
-            .RuleFor(x => x.Age, (faker, employee) => CalculateAge(employee.DateBirthday));;
+                (faker, _) => 
+                    DateTime.SpecifyKind(faker.Date.Between(DateTime.Now.AddYears(-50), DateTime.Now.AddYears(-18)), DateTimeKind.Utc))
+            .RuleFor(x => x.Age, (faker, employee) => CalculateAge(employee.DateBirthday));
 
         return faker.Generate(count);
-        
     }
     public int CalculateAge(DateTime dateBirthday)
     {

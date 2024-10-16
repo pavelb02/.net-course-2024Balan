@@ -17,7 +17,7 @@ public class Person
         NumPassport = numPassport;
         Age = CalculateAge(dateBirthday);
         Phone = phone;
-        DateBirthday = dateBirthday;
+        DateBirthday = dateBirthday.ToUniversalTime();
     }
     protected Person (){}
     public int CalculateAge(DateTime dateBirthday)

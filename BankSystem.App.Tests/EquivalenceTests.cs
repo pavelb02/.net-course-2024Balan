@@ -42,7 +42,7 @@ public class EquivalenceTests
             testDataGenerator.GenerateClientsBankDictionaryAccount(clientsBankList, currencies);
         var client = clientsBankDictionaryAccount.Keys.First();
         var newClient = new Client(client.Name, client.Surname, client.NumPassport, client.Age, client.Phone,
-            client.AccountNumber, client.Balance, client.DateBirthday);
+             client.Balance, client.DateBirthday);
         //Act
         Account result = clientsBankDictionaryAccount[newClient];
         //Assert
@@ -56,8 +56,7 @@ public class EquivalenceTests
         var clientsBankList = testDataGenerator.GenerateClientsBankList(10);
         var clientsBankDictionaryAccount = testDataGenerator.GenerateClientsBankDictionaryMultiAccount(clientsBankList);
         var client = clientsBankDictionaryAccount.Keys.First();
-        var newClient = new Client(client.Name, client.Surname, client.NumPassport, client.Age, client.Phone,
-            client.AccountNumber, client.Balance, client.DateBirthday);
+        var newClient = new Client(client.Name, client.Surname, client.NumPassport, client.Age, client.Phone, client.Balance, client.DateBirthday);
         //Act
         Account[] result = clientsBankDictionaryAccount[newClient];
         //Assert
@@ -112,7 +111,7 @@ public class EquivalenceTests
         _clientService.AddClients(clientsBankList);
         _clientService.AddAccount(clientsBankList.First().Id, account[0]);
         //Act
-        var result = _clientService.GetClient(clientsBankList.First().Id).Accounts.FirstOrDefault(account[0]);
+        var result = _clientService.GetClient(clientsBankList.First().Id).AccountsClient.FirstOrDefault(account[0]);
         //Assert
         Assert.Equal(account[0], result);
     }

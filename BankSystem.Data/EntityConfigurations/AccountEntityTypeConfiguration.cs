@@ -10,10 +10,10 @@ public class AccountEntityTypeConfiguration : IEntityTypeConfiguration<Account>
     {
         builder.ToTable("Accounts");
         builder.Property(a => a.Id);
-        builder.Property(a => a.Currency);
         builder.Property(a => a.Amount);
 
         builder.HasKey(a => a.Id);
-        builder.HasOne(c => c.Client).WithMany(co => co.Accounts).HasForeignKey(a => a.ClientId);
+        builder.HasOne(c => c.Client).WithMany(co => co.AccountsClient).HasForeignKey(a => a.ClientId);
+        builder.HasOne(c => c.Currency).WithMany(co => co.AccountsCurrency).HasForeignKey(a => a.CurrencyId);
     }
 }

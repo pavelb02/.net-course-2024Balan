@@ -20,6 +20,7 @@ public class EmployeeStorage : IStorage<Employee, SearchRequest>
             return;
 
         _dbContext.Employees.Add(employee);
+        _dbContext.SaveChanges();
     }
 
     public Employee GetById(Guid employeeId)

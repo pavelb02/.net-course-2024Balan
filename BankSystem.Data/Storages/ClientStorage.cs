@@ -21,6 +21,7 @@ public class ClientStorage : IClientStorage
             throw new InvalidOperationException($"Клиент с ID {client.ClientId} уже существует.");
         }
         _dbContext.Clients.Add(client);
+        _dbContext.SaveChanges();
     }
 
     public Client GetById(Guid clientId)
@@ -71,26 +72,25 @@ public class ClientStorage : IClientStorage
         updateClient.Phone = client.Phone;
         updateClient.DateBirthday = client.DateBirthday;
         updateClient.Balance = client.Balance;
-        updateClient.AccountNumber = client.AccountNumber;
-        
-        foreach (var oldAccount in updateClient.Accounts.ToList())
+
+        foreach (var oldAccount in updateClient.AccountsClient.ToList())
         {
-            if (client.Accounts.All(a => a.Id != oldAccount.Id))
+            if (client.AccountsClient.All(a => a.Id != oldAccount.Id))
             {
                 _dbContext.Accounts.Remove(oldAccount);
             }
         }
         
-        foreach (var account in client.Accounts)
+        foreach (var account in client.AccountsClient)
         {
-            var existingAccount = updateClient.Accounts.FirstOrDefault(a => a.Id == account.Id);
+            var existingAccount = updateClient.AccountsClient.FirstOrDefault(a => a.Id == account.Id);
             if (existingAccount != null)
             {
                 existingAccount.Amount = account.Amount;
             }
             else
             {
-                updateClient.Accounts.Add(account);
+                updateClient.AccountsClient.Add(account);
                 account.ClientId = updateClient.Id;
             }
         }
@@ -108,15 +108,17 @@ public class ClientStorage : IClientStorage
     public void AddAccount(Guid clientId, Account account)
     {
         var client = _dbContext.Clients.FirstOrDefault(c => c.Id == clientId);
-        client?.Accounts.Add(account);
+        client?.AccountsClient.Add(account);
+        _dbContext.SaveChanges();
     }
 
     public void DeleteAccount(Guid clientId, Guid accountId)
     {
         var client = _dbContext.Clients.FirstOrDefault(c => c.Id == clientId);
-        var account = client?.Accounts.FirstOrDefault(a => a.Id == accountId);
+        var account = client?.AccountsClient.FirstOrDefault(a => a.Id == accountId);
         if (client != null && account != null)
-            client.Accounts.Remove(account);
+            client.AccountsClient.Remove(account);
+        _dbContext.SaveChanges();
     }
 
     public Client? SearchYoungClient()

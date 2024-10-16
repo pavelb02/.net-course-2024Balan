@@ -10,16 +10,15 @@ public class ClientEntityTypeConfiguration : IEntityTypeConfiguration<Client>
     {
         builder.ToTable("Clients");
         builder.Property(p => p.Id);
-        builder.Property(p => p.Name);
-        builder.Property(p => p.Surname);
-        builder.Property(p => p.NumPassport);
-        builder.Property(p => p.Phone);
-        builder.Property(p => p.DateBirthday);
+        builder.Property(p => p.Name).HasMaxLength(100).IsRequired();
+        builder.Property(p => p.Surname).HasMaxLength(100).IsRequired();
+        builder.Property(p => p.NumPassport).IsRequired();
+        builder.Property(p => p.Phone).IsRequired();
+        builder.Property(p => p.DateBirthday).IsRequired();
 
         builder.Property(c => c.Balance);
-        builder.Property(c => c.AccountNumber);
 
         builder.HasKey(p => p.Id);
-        builder.HasMany(c => c.Accounts).WithOne(co => co.Client).HasForeignKey(a => a.ClientId);
+        builder.HasMany(c => c.AccountsClient).WithOne(co => co.Client).HasForeignKey(a => a.ClientId);
     }
 }

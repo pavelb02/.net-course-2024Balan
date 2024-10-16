@@ -16,7 +16,8 @@ public class ClientStorageTests
         //Act
         _clientStorage.Add(clientsBankList.First());
         //Assert
-        Assert.NotNull(_clientStorage.GetById(clientsBankList.First().Id));
+        var addedClient = _clientStorage.GetById(clientsBankList.First().Id);
+        Assert.NotNull(addedClient);
     }
     [Fact]
     public void SearchYoungClientPositiv()
