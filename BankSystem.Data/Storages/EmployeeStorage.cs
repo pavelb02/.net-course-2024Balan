@@ -30,34 +30,41 @@ public class EmployeeStorage : IStorage<Employee, SearchRequest>
 
     public List<Employee> GetCollection(SearchRequest searchRequest)
     {
-        IEnumerable<Employee> employees = _dbContext.Employees;
+        IQueryable<Employee> request = _dbContext.Employees;
         if (!string.IsNullOrWhiteSpace(searchRequest.Name))
         {
-            employees = employees.Where(e => e.Name == searchRequest.Name);
+            request = request.Where(e => e.Name == searchRequest.Name);
         }
 
         if (!string.IsNullOrWhiteSpace(searchRequest.Surname))
         {
-            employees = employees.Where(e => e.Surname == searchRequest.Surname);
+            request = request.Where(e => e.Surname == searchRequest.Surname);
         }
 
         if (!string.IsNullOrWhiteSpace(searchRequest.Phone))
         {
-            employees = employees.Where(e => e.Phone == searchRequest.Phone);
+            request = request.Where(e => e.Phone == searchRequest.Phone);
         }
 
         if (!string.IsNullOrWhiteSpace(searchRequest.NumPassport))
         {
-            employees = employees.Where(e => e.NumPassport == searchRequest.NumPassport);
+            request = request.Where(e => e.NumPassport == searchRequest.NumPassport);
         }
 
         if (searchRequest.DateStart != null && searchRequest.DateEnd != null &&
             searchRequest.DateStart <= searchRequest.DateEnd)
         {
-            employees = employees.Where(e => 
+            request = request.Where(e => 
                 e.DateBirthday >= searchRequest.DateStart && e.DateBirthday <= searchRequest.DateEnd); 
         }
-        return employees.ToList();
+        //var countRecords = request.Count();
+        
+        var employees = request
+            .OrderBy(c => c.Surname).ThenBy(c => c.Name)
+            .Skip((searchRequest.PageNumber - 1) * searchRequest.PageSize)
+            .Take(searchRequest.PageSize)
+            .ToList();
+        return employees;
     }
 
     public void Update(Guid employeeId, Employee employee)

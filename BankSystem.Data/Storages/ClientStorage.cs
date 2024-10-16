@@ -31,7 +31,7 @@ public class ClientStorage : IClientStorage
 
     public List<Client> GetCollection(SearchRequest searchRequest)
     {
-        IEnumerable<Client> request = _dbContext.Clients;
+        IQueryable<Client> request = _dbContext.Clients;
         if (!string.IsNullOrWhiteSpace(searchRequest.Name))
         {
             request = request.Where(c => c.Name == searchRequest.Name);
@@ -58,7 +58,15 @@ public class ClientStorage : IClientStorage
             request = request.Where(c => 
                 c.DateBirthday >= searchRequest.DateStart && c.DateBirthday <= searchRequest.DateEnd); 
         }
-        return request.ToList();
+
+        //var countRecords = request.Count();
+        
+        var clients = request
+            .OrderBy(c => c.Surname).ThenBy(c => c.Name)
+            .Skip((searchRequest.PageNumber - 1) * searchRequest.PageSize)
+            .Take(searchRequest.PageSize)
+            .ToList();
+        return clients;
     }
 
     public void Update(Guid clientId, Client client)

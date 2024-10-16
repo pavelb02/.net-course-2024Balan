@@ -61,6 +61,7 @@ public class TestDataGenerator
         {
             selectedCurrency = currencies.First(c => c.Code == "USD");
         }        var faker = new Faker<Account>("ru")
+            .RuleFor(x => x.Id, faker => faker.Random.Guid())
             .RuleFor(x => x.Amount, faker => faker.Finance.Amount(100, 10000))
             .RuleFor(x => x.Currency,_  => selectedCurrency);
         return faker.Generate(count).ToArray();

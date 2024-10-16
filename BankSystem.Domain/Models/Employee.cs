@@ -5,7 +5,7 @@ public class Employee : Person
     public string Position { get; set; }
     public DateTime StartDate { get; set; }
     public int Salary { get; set; }
-    public string Contract { get; set; }
+    public string Contract { get; set; } = "Contract";
 
     public Employee(string name, string surname, string numPassport, int age, string phone, string position,
         DateTime startDate, int salary, DateTime dateBirthday)
