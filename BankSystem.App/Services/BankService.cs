@@ -6,8 +6,11 @@ public class BankService
 {
     public int SalaryCalculate(List<Client> clients, List<Employee> employees, int countOwner)
     {
-        var profit = clients.Sum(client => 0.2m * client.Balance);
-
+        decimal profit = 0;
+        foreach (var client in clients)
+        {
+            profit = client.AccountsClient.Sum(a => 0.2m * a.Amount);
+        }
         var costs = employees.Sum(employee => employee.Salary);
 
         if (countOwner <= 0)

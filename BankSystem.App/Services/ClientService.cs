@@ -1,113 +1,107 @@
 ﻿using BankSystem.App.Exeptions;
 using BankSystem.App.Interfaces;
 using BankSystem.Domain.Models;
+
 namespace BankSystem.App.Services;
 
 public class ClientService
 {
     private readonly IClientStorage _clientStorage;
+    private readonly ICurrencyService _currencyService;
 
-    public ClientService(IClientStorage clientStorage)
+    public ClientService(IClientStorage clientStorage, ICurrencyService currencyService)
     {
         _clientStorage = clientStorage;
+        _currencyService = currencyService;
     }
 
-    public void AddClient(Dictionary<Client, Account[]> clientsBankDictionaryAccount)
+    public Client GetClient(Guid clientId)
+    {
+        return _clientStorage.GetById(clientId);
+    }
+    
+    public void DeleteClient(Guid clientId)
+    {
+        _clientStorage.Delete(clientId);
+    }
+    
+    public void DeleteAccount(Guid accountId)
+    {
+        _clientStorage.DeleteAccount(accountId);
+    }
+
+    public void AddClients(Client client, string currencyCode)
     {
         try
         {
-            foreach (var client in clientsBankDictionaryAccount)
-            {
-
-                if (ValidateAddClient(client.Key))
-                {
-                    _clientStorage.Add(client.Key);
-                    if (ValidateAccount(client.Value))
-                    {
-                        _clientStorage.AddAccounts(client.Key, client.Value);
-                    }
-                }
-            }
+            if (!ValidateAddClient(client)) return;
+            var currencyId = _currencyService.GetGurrency(currencyCode);
+            var account = new Account(client.Id, currencyId);
+            client.AccountsClient.Add(account);
+            _clientStorage.Add(client);
         }
-        catch (Exception ex)
+        catch (ArgumentException ex)
         {
             throw new ArgumentException($"Ошибка при добавлении клиента: {ex.Message}", ex);
         }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Ошибка: {ex.Message}\nТрассировка стека: {ex.StackTrace}");
+            throw;
+        }
     }
 
-    public void AddAccounts(Client client, Account[] accounts)
+    public void AddAccount(Guid clientId, string currencyCode)
     {
-        var clientOne = _clientStorage.Get(new SearchRequest { NumPassport = client.NumPassport}).First();
         try
         {
-            if (clientOne == null)
-                throw new EntityNotFoundException(nameof(client));
-            if (ValidateAccount(accounts))
-                _clientStorage.AddAccounts(clientOne, accounts); 
+            var client = _clientStorage.GetById(clientId);
+            var currencyId = _currencyService.GetGurrency(currencyCode);
+            var account = new Account(client.Id, currencyId);
+            _clientStorage.AddAccount(clientId, account);
+        }
+        catch (ArgumentException ex)
+        {
+            throw new ArgumentException($"Ошибка при добавлении аккаунта: {ex.Message}", ex);
         }
         catch (Exception ex)
         {
-            throw new ArgumentException($"Ошибка при добавлении аккаунта: {ex.Message}");
+            Console.WriteLine($"Ошибка: {ex.Message}\nТрассировка стека: {ex.StackTrace}");
+            throw;
         }
     }
 
-    public Account GetAccount(Client client, string currencyCode)
+    public void UpdateClient(Guid clientId, Client newClient)
     {
-        return _clientStorage.GetAccount(client, currencyCode);
-    }
-    
-    public void UpdateAccount(Client client, decimal ammount, string currencyCode, Currency[] currencies)
-    {
-        var clientOne = _clientStorage.Get(new SearchRequest { NumPassport = client.NumPassport }).First();
         try
         {
-            if (clientOne == null)
-                throw new EntityNotFoundException(nameof(client));
-            if (ValidateCurrency(currencyCode, currencies))
+            if (ValidateAddClient(newClient))
             {
-                if (ammount < 0)
-                    throw new ArgumentOutOfRangeException(nameof(ammount),
-                        "Сумма на счету не может быть меньше нуля.");
-                _clientStorage.UpdateAccount(clientOne, ammount, currencyCode);
+                var accounts = _clientStorage.GetById(clientId).AccountsClient;
+                var currencyId = _currencyService.GetGurrency("EUR");
+                accounts.Add(new Account(clientId, currencyId));
+                foreach (var account in accounts)
+                {
+                    newClient.AccountsClient.Add(account);
+                }
+                _clientStorage.Update(clientId, newClient);
             }
         }
+        catch (ArgumentException ex)
+        {
+            throw new ArgumentException($"Ошибка при обновлении клиента: {ex.Message}", ex);
+        }
         catch (Exception ex)
         {
-            throw new ArgumentException($"Ошибка при обновлении аккаунта: {ex.Message}");
+            Console.WriteLine($"Ошибка: {ex.Message}\nТрассировка стека: {ex.StackTrace}");
+            throw;
         }
     }
 
     public List<Client> FilterClients(SearchRequest searchRequest)
     {
-        var filteredClients = _clientStorage.Get(searchRequest);
+        var filteredClients = _clientStorage.GetCollection(searchRequest);
         return filteredClients;
-    }
-
-    private static bool ValidateCurrency(string currencyCode, Currency[] currencies)
-    {
-        if (string.IsNullOrWhiteSpace(currencyCode))
-        {
-            throw new ArgumentException("В метод передана пустая строка (или из пробелов) или null", nameof(currencyCode));
-        }
-
-        if (currencies.All(c => c.Code != currencyCode))
-        {
-            throw new EntityNotFoundException(nameof(currencyCode));
-        }
-        
-        return true;
-    }
-    private static bool ValidateAccount(Account[] accountsArray)
-    {
-        foreach (var account in accountsArray)
-        {
-            if (account.Ammount < 0)
-            {
-                throw new ArgumentOutOfRangeException(nameof(account.Ammount),
-                    "Сумма на счету не может быть меньше нуля.");
-            }
-        }
-        return true;
     }
 
     private static bool ValidateAddClient(Client client)
