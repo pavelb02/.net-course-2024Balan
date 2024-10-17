@@ -16,9 +16,9 @@ public class ClientStorage : IClientStorage
 
     public void Add(Client client)
     {
-        if (_dbContext.Clients.Any(c => c.ClientId == client.ClientId))
+        if (_dbContext.Clients.Any(c => c.Id == client.Id))
         {
-            throw new InvalidOperationException($"Клиент с ID {client.ClientId} уже существует.");
+            throw new InvalidOperationException($"Клиент с ID {client.Id} уже существует.");
         }
         _dbContext.Clients.Add(client);
         _dbContext.SaveChanges();
@@ -26,7 +26,9 @@ public class ClientStorage : IClientStorage
 
     public Client GetById(Guid clientId)
     {
-        return _dbContext.Clients.FirstOrDefault(c => c.Id == clientId);
+        var client = _dbContext.Clients.FirstOrDefault(c => c.Id == clientId);
+        if (client == null) throw new ArgumentException($"Клиент с Id {clientId} не найден.");
+        return client;
     }
 
     public List<Client> GetCollection(SearchRequest searchRequest)
@@ -60,13 +62,17 @@ public class ClientStorage : IClientStorage
         }
 
         //var countRecords = request.Count();
-        
-        var clients = request
-            .OrderBy(c => c.Surname).ThenBy(c => c.Name)
-            .Skip((searchRequest.PageNumber - 1) * searchRequest.PageSize)
-            .Take(searchRequest.PageSize)
-            .ToList();
-        return clients;
+        if (searchRequest.PageSize != 0 && searchRequest.PageNumber != 0)
+        {
+            var clients = request
+                .OrderBy(c => c.Surname).ThenBy(c => c.Name)
+                .Skip((searchRequest.PageNumber - 1) * searchRequest.PageSize)
+                .Take(searchRequest.PageSize)
+                .ToList();
+            return clients;
+        }
+
+        return request.ToList();
     }
 
     public void Update(Guid clientId, Client client)
@@ -79,7 +85,6 @@ public class ClientStorage : IClientStorage
         updateClient.NumPassport = client.NumPassport;
         updateClient.Phone = client.Phone;
         updateClient.DateBirthday = client.DateBirthday;
-        updateClient.Balance = client.Balance;
 
         foreach (var oldAccount in updateClient.AccountsClient.ToList())
         {
@@ -116,17 +121,23 @@ public class ClientStorage : IClientStorage
     public void AddAccount(Guid clientId, Account account)
     {
         var client = _dbContext.Clients.FirstOrDefault(c => c.Id == clientId);
-        client?.AccountsClient.Add(account);
+        
+        client.AccountsClient.Add(account);
         _dbContext.SaveChanges();
     }
 
-    public void DeleteAccount(Guid clientId, Guid accountId)
+    public void DeleteAccount(Guid accountId)
     {
-        var client = _dbContext.Clients.FirstOrDefault(c => c.Id == clientId);
-        var account = client?.AccountsClient.FirstOrDefault(a => a.Id == accountId);
-        if (client != null && account != null)
-            client.AccountsClient.Remove(account);
-        _dbContext.SaveChanges();
+        var account = _dbContext.Accounts.FirstOrDefault(a => a.Id == accountId);
+        if (account != null)
+        {
+            _dbContext.Accounts.Remove(account);
+            _dbContext.SaveChanges();
+        }
+        else
+        {
+            throw new ArgumentException($"Аккаунт с Id {accountId} не найден.");
+        }
     }
 
     public Client? SearchYoungClient()

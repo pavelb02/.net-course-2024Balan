@@ -11,12 +11,11 @@ public class TestDataGenerator
     public List<Client> GenerateClientsBankList(int count)
     {
         Faker<Client> faker = new Faker<Client>("ru")
-            .RuleFor(x => x.ClientId, (faker, _) => faker.Random.Guid())
+            .RuleFor(x => x.Id, (faker, _) => faker.Random.Guid())
             .RuleFor(x => x.Name, (faker, _) => faker.Person.FirstName)
             .RuleFor(x => x.Surname, (faker, _) => faker.Person.LastName)
             .RuleFor(x => x.NumPassport, (faker, _) => faker.Random.Int(100000, 999999).ToString())
             .RuleFor(x => x.Phone, (faker, _) => faker.Person.Phone)
-            .RuleFor(x => x.Balance, (faker, _) => faker.Finance.Amount(100, 10000))
             .RuleFor(x => x.DateBirthday, (faker, _) => 
                 DateTime.SpecifyKind(faker.Date.Between(DateTime.Now.AddYears(-50), DateTime.Now.AddYears(-18)), DateTimeKind.Utc))
             .RuleFor(x => x.Age, (faker, client) => CalculateAge(client.DateBirthday));
@@ -32,6 +31,7 @@ public class TestDataGenerator
     public Dictionary<Client, Account> GenerateClientsBankDictionaryAccount(List<Client> clientsList, Currency[] currencies)
     {
         var faker = new Faker<Account>("ru")
+            .RuleFor(x => x.Id, (faker, _) => faker.Random.Guid())
             .RuleFor(x => x.Amount, faker => faker.Finance.Amount(100, 10000))
             .RuleFor(x => x.Currency,faker => faker.PickRandom(currencies));
         var accounts = faker.Generate(clientsList.Count).ToArray();
@@ -43,7 +43,7 @@ public class TestDataGenerator
         return clientsDictionaryAccount;
     }
 
-    public Account[] GenerateAccountsArray(int count, string currencyCode)
+    public Account[] GenerateAccountsArray(int count, string currencyCode = "USD")
     {
         Currency[] currencies =
         {
@@ -61,7 +61,7 @@ public class TestDataGenerator
         {
             selectedCurrency = currencies.First(c => c.Code == "USD");
         }        var faker = new Faker<Account>("ru")
-            .RuleFor(x => x.Id, faker => faker.Random.Guid())
+            .RuleFor(x => x.Id, (faker, _) => faker.Random.Guid())
             .RuleFor(x => x.Amount, faker => faker.Finance.Amount(100, 10000))
             .RuleFor(x => x.Currency,_  => selectedCurrency);
         return faker.Generate(count).ToArray();
@@ -79,8 +79,8 @@ public class TestDataGenerator
     public List<Employee> GenerateEmployeesBankList(int count, string[] positions)
     {
         Faker<Employee> faker = new Faker<Employee>("ru")
-            .RuleFor(x => x.Name, (faker, _) => faker.Person.FirstName)
             .RuleFor(x => x.Id, (faker, _) => faker.Random.Guid())
+            .RuleFor(x => x.Name, (faker, _) => faker.Person.FirstName)
             .RuleFor(x => x.Surname, (faker, _) => faker.Person.LastName)
             .RuleFor(x => x.NumPassport, (faker, _) => faker.Random.Int(100000, 999999).ToString())
             .RuleFor(x => x.Phone, (faker, _) => faker.Person.Phone)

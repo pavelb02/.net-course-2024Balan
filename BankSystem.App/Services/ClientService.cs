@@ -7,10 +7,12 @@ namespace BankSystem.App.Services;
 public class ClientService
 {
     private readonly IClientStorage _clientStorage;
+    private readonly ICurrencyService _currencyService;
 
-    public ClientService(IClientStorage clientStorage)
+    public ClientService(IClientStorage clientStorage, ICurrencyService currencyService)
     {
         _clientStorage = clientStorage;
+        _currencyService = currencyService;
     }
 
     public Client GetClient(Guid clientId)
@@ -23,19 +25,20 @@ public class ClientService
         _clientStorage.Delete(clientId);
     }
     
-    public void DeleteAccount(Guid clientId, Guid accountId)
+    public void DeleteAccount(Guid accountId)
     {
-        _clientStorage.DeleteAccount(clientId, accountId);
+        _clientStorage.DeleteAccount(accountId);
     }
 
-    public void AddClients(List<Client> clientsList)
+    public void AddClients(Client client, string currencyCode)
     {
         try
         {
-            foreach (var client in clientsList.Where(client => ValidateAddClient(client)))
-            {
-                _clientStorage.Add(client);
-            }
+            if (!ValidateAddClient(client)) return;
+            var currencyId = _currencyService.GetGurrency(currencyCode);
+            var account = new Account(client.Id, currencyId);
+            client.AccountsClient.Add(account);
+            _clientStorage.Add(client);
         }
         catch (ArgumentException ex)
         {
@@ -43,16 +46,19 @@ public class ClientService
         }
         catch (Exception ex)
         {
-            throw new Exception("Произошла непредвиденная ошибка при добавлении клиента.", ex);
+            Console.WriteLine($"Ошибка: {ex.Message}\nТрассировка стека: {ex.StackTrace}");
+            throw;
         }
     }
 
-    public void AddAccount(Guid clientId, Account account)
+    public void AddAccount(Guid clientId, string currencyCode)
     {
         try
         {
-            if (ValidateAccount(account))
-                _clientStorage.AddAccount(clientId, account); 
+            var client = _clientStorage.GetById(clientId);
+            var currencyId = _currencyService.GetGurrency(currencyCode);
+            var account = new Account(client.Id, currencyId);
+            _clientStorage.AddAccount(clientId, account);
         }
         catch (ArgumentException ex)
         {
@@ -60,7 +66,8 @@ public class ClientService
         }
         catch (Exception ex)
         {
-            throw new Exception("Произошла непредвиденная ошибка при добавлении аккаунта.", ex);
+            Console.WriteLine($"Ошибка: {ex.Message}\nТрассировка стека: {ex.StackTrace}");
+            throw;
         }
     }
 
@@ -70,6 +77,13 @@ public class ClientService
         {
             if (ValidateAddClient(newClient))
             {
+                var accounts = _clientStorage.GetById(clientId).AccountsClient;
+                var currencyId = _currencyService.GetGurrency("EUR");
+                accounts.Add(new Account(clientId, currencyId));
+                foreach (var account in accounts)
+                {
+                    newClient.AccountsClient.Add(account);
+                }
                 _clientStorage.Update(clientId, newClient);
             }
         }
@@ -79,7 +93,8 @@ public class ClientService
         }
         catch (Exception ex)
         {
-            throw new Exception("Произошла непредвиденная ошибка при обновлении клиента.", ex);
+            Console.WriteLine($"Ошибка: {ex.Message}\nТрассировка стека: {ex.StackTrace}");
+            throw;
         }
     }
 
@@ -87,32 +102,6 @@ public class ClientService
     {
         var filteredClients = _clientStorage.GetCollection(searchRequest);
         return filteredClients;
-    }
-
-    private static bool ValidateCurrency(string currencyCode, Currency[] currencies)
-    {
-        if (string.IsNullOrWhiteSpace(currencyCode))
-        {
-            throw new ArgumentException("В метод передана пустая строка (или из пробелов) или null", nameof(currencyCode));
-        }
-
-        if (currencies.All(c => c.Code != currencyCode))
-        {
-            throw new EntityNotFoundException(nameof(currencyCode));
-        }
-        
-        return true;
-    }
-
-    private static bool ValidateAccount(Account account)
-    {
-        if (account.Amount < 0)
-        {
-            throw new ArgumentOutOfRangeException(nameof(account.Amount),
-                "Сумма на счету не может быть меньше нуля.");
-        }
-
-        return true;
     }
 
     private static bool ValidateAddClient(Client client)

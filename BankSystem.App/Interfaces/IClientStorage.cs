@@ -6,5 +6,5 @@ namespace BankSystem.App.Interfaces;
 public interface IClientStorage : IStorage<Client, SearchRequest>
 {
     public void AddAccount(Guid clientId, Account account);
-    public void DeleteAccount(Guid clientId, Guid accountId);
+    public void DeleteAccount(Guid accountId);
 } 

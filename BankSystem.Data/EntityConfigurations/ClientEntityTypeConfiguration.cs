@@ -16,9 +16,7 @@ public class ClientEntityTypeConfiguration : IEntityTypeConfiguration<Client>
         builder.Property(p => p.Phone).IsRequired();
         builder.Property(p => p.DateBirthday).IsRequired();
 
-        builder.Property(c => c.Balance);
-
-        builder.HasKey(p => p.Id);
+       builder.HasKey(p => p.Id);
         builder.HasMany(c => c.AccountsClient).WithOne(co => co.Client).HasForeignKey(a => a.ClientId);
     }
 }

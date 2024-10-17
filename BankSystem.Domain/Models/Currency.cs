@@ -4,7 +4,7 @@ namespace BankSystem.Domain.Models;
 
 public class Currency
 {
-    public Guid Id { get; set; }
+    public Guid Id { get; set; } = Guid.NewGuid();
     public string Code { get; set; } // Код валюты (USD, EUR, RUB)
     public string Name { get; set; } // Название валюты (доллар США, евро, российский рубль)
     public string Symbol { get; set; } // Символ валюты ($, €, ₽)

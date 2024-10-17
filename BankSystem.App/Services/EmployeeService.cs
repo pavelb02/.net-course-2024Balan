@@ -33,7 +33,8 @@ public class EmployeeService
             }
             catch (Exception ex)
             {
-                throw new Exception("Произошла непредвиденная ошибка при добавлении сотрудника.", ex);
+                Console.WriteLine($"Ошибка: {ex.Message}\nТрассировка стека: {ex.StackTrace}");
+                throw;
             }
         }
     }
@@ -53,7 +54,8 @@ public class EmployeeService
         }
         catch (Exception ex)
         {
-            throw new Exception("Произошла непредвиденная ошибка при обновлении сотрудника.", ex);
+            Console.WriteLine($"Ошибка: {ex.Message}\nТрассировка стека: {ex.StackTrace}");
+            throw;
         }
     }
 

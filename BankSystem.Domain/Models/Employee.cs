@@ -32,16 +32,7 @@ public class Employee : Person
 
     public override int GetHashCode()
     {
-        int hashCode = Name?.GetHashCode() ?? 0;
-        hashCode = (hashCode * 31) ^ (Surname?.GetHashCode() ?? 0);
-        hashCode = (hashCode * 31) ^ (NumPassport?.GetHashCode() ?? 0);
-        hashCode = (hashCode * 31) ^ Age.GetHashCode();
-        hashCode = (hashCode * 31) ^ (Phone?.GetHashCode() ?? 0);
-        hashCode = (hashCode * 31) ^ (Position?.GetHashCode() ?? 0);
-        hashCode = (hashCode * 31) ^ Salary.GetHashCode();
-        hashCode = (hashCode * 31) ^ StartDate.GetHashCode();
-        hashCode = (hashCode * 31) ^ DateBirthday.GetHashCode();
-        return hashCode;
+        return HashCode.Combine(Id, NumPassport);
     }
 
     public override string ToString()
