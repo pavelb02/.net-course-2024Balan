@@ -7,9 +7,9 @@ public class Employee : Person
     public int Salary { get; set; }
     public string Contract { get; set; } = "Contract";
 
-    public Employee(string name, string surname, string numPassport, int age, string phone, string position,
+    public Employee(string name, string surname, string numPassport, string phone, string position,
         DateTime startDate, int salary, DateTime dateBirthday)
-        : base(name, surname, numPassport, age, phone, dateBirthday)
+        : base(name, surname, numPassport, phone, dateBirthday)
     {
         Position = position;
         StartDate = startDate;

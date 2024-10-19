@@ -14,7 +14,7 @@ public class EmployeeEntityTypeConfiguration : IEntityTypeConfiguration<Employee
         builder.Property(p => p.Surname).HasMaxLength(100).IsRequired();
         builder.Property(p => p.NumPassport).IsRequired();
         builder.Property(p => p.Phone).IsRequired();
-        builder.Property(p => p.DateBirthday).IsRequired();
+        builder.Property(p => p.DateBirthday).HasColumnType("date").IsRequired();
 
         builder.Property(c => c.Position);
         builder.Property(c => c.Salary);

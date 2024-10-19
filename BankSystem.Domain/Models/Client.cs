@@ -3,8 +3,8 @@ namespace BankSystem.Domain.Models;
 public class Client : Person
 {
     public ICollection<Account> AccountsClient { get; set; } = new List<Account>();
-    public Client(string name, string surname, string numPassport, int age, string phone, DateTime dateBirthday)
-        : base(name, surname, numPassport, age, phone, dateBirthday)
+    public Client(string name, string surname, string numPassport, string phone, DateTime dateBirthday)
+        : base(name, surname, numPassport, phone, dateBirthday)
     {
     }
     public Client() { }

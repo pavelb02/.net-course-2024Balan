@@ -95,14 +95,16 @@ public class EmployeeStorage : IStorage<Employee, SearchRequest>
     
     public Employee? SearchYoungEmployee()
     {
-        return _dbContext.Employees.MinBy(c => c.Age);
+        return _dbContext.Employees.MinBy(c => c.DateBirthday);
     }
     public Employee? SearchOldEmployee()
     {
-        return _dbContext.Employees.MaxBy(c => c.Age);
+        return _dbContext.Employees.MaxBy(c => c.DateBirthday);
     }
     public int SearchAverageAgeEmployee()
     {
-        return (int)_dbContext.Employees.Average(c => c.Age);
+        var dateNow = DateTime.Now;
+        return (int)_dbContext.Employees.Average(e => dateNow.Year - e.DateBirthday.Year -
+                                                    (dateNow.DayOfYear < e.DateBirthday.DayOfYear ? 1 : 0));
     }
 }

@@ -10,7 +10,7 @@ class Program
     {
         // Практическое задание 
         // 1 part
-        Employee employee1 = new ("Ivan", "Ivanov", "TY563156", 25,"7894561230", "Manager", DateTime.Now, 5000, new DateTime(2000, 8, 21));
+        Employee employee1 = new ("Ivan", "Ivanov", "TY563156", "7894561230", "Manager", DateTime.Now, 5000, new DateTime(2000, 8, 21));
         
         Console.WriteLine(employee1.Contract);
         GenerateContract(employee1);
@@ -23,27 +23,27 @@ class Program
         Console.WriteLine();
         // 2 part
         // Лист клиентов банка
-        var client = new Client("Dmitriy", "Dmitrov", "YU156489", 27, "7984248948",  new DateTime(1990, 8, 21));
+        var client = new Client("Dmitriy", "Dmitrov", "YU156489", "7984248948",  new DateTime(1990, 8, 21));
         var clients = new List<Client>
         {
             client,
-            new Client("Alexey", "Alexeev", "YY187459", 28, "7897458948",  new DateTime(1995, 8, 21)),
-            new Client("Sergey", "Seriev", "HU789654", 26, "7982758728",  new DateTime(1996, 8, 21)),
-            new Client("Viktor", "Viktorov", "YE147852", 24, "7278287948",  new DateTime(1999, 8, 21)),
-            new Client("Pavel", "Pavlov", "DU369852", 22, "7782827278",  new DateTime(1992, 8, 21))
+            new Client("Alexey", "Alexeev", "YY187459", "7897458948",  new DateTime(1995, 8, 21)),
+            new Client("Sergey", "Seriev", "HU789654", "7982758728",  new DateTime(1996, 8, 21)),
+            new Client("Viktor", "Viktorov", "YE147852", "7278287948",  new DateTime(1999, 8, 21)),
+            new Client("Pavel", "Pavlov", "DU369852", "7782827278",  new DateTime(1992, 8, 21))
         };
         // Лист сотрудников
         var employees = new List<Employee>
         {
-            new Employee("Ivan", "Ivanov", "TY563156", 29, "7894561230", "Manager", DateTime.Now, 5000, new DateTime(2002, 8, 21)),
-            new Employee("Petr", "Petrov", "RT768451", 31, "7782453210", "Engineer", DateTime.Now, 4500, new DateTime(1999, 8, 21))
+            new Employee("Ivan", "Ivanov", "TY563156", "7894561230", "Manager", DateTime.Now, 5000, new DateTime(2002, 8, 21)),
+            new Employee("Petr", "Petrov", "RT768451", "7782453210", "Engineer", DateTime.Now, 4500, new DateTime(1999, 8, 21))
         };
         // Лист владельцев
         var owners = new List<Employee>
         {
-            new Employee("Sergey", "Sidorov", "PL123456", 42, "7765432190", "Owner", DateTime.Now, 0, new DateTime(1993, 8, 21)),
-            new Employee("Olga", "Smirnova", "WE987654", 37, "7543217890", "Co-owner", DateTime.Now, 0, new DateTime(1997, 8, 21)),
-            new Employee("Ekaterina", "Kuznetsova", "YT789654", 39, "7321765890", "Co-owner", DateTime.Now, 0, new DateTime(2000, 2, 9))
+            new Employee("Sergey", "Sidorov", "PL123456", "7765432190", "Owner", DateTime.Now, 0, new DateTime(1993, 8, 21)),
+            new Employee("Olga", "Smirnova", "WE987654", "7543217890", "Co-owner", DateTime.Now, 0, new DateTime(1997, 8, 21)),
+            new Employee("Ekaterina", "Kuznetsova", "YT789654", "7321765890", "Co-owner", DateTime.Now, 0, new DateTime(2000, 2, 9))
         };
         var bankService = new BankService();
         var salaryOwner= bankService.SalaryCalculate(clients, employees, owners.Count);
@@ -55,7 +55,7 @@ class Program
         }
 
         Console.WriteLine();
-        var clientBank = new Client("Vasiliy", "Vaskov", "KJ197358", 21, "7465426248", new DateTime(2000, 9, 29));
+        var clientBank = new Client("Vasiliy", "Vaskov", "KJ197358", "7465426248", new DateTime(2000, 9, 29));
         Console.WriteLine(clientBank.ToString());
         var employeeBank = bankService.ChangeClientToEmployee(clientBank, 2500);
         Console.WriteLine(employeeBank.ToString());
@@ -85,13 +85,16 @@ class Program
         Console.WriteLine($"{sw.Elapsed} Dictionary");
         
         sw.Restart();
-        var foundListClientAge = clientsBankList.Where(clientList => clientList.Age < 35).ToList();
-        sw.Stop();
+        var dateNow = DateTime.Now;
+        var foundListClientAge = clientsBankList.Where(clientList => dateNow.Year - clientList.DateBirthday.Year -
+                (dateNow.DayOfYear < clientList.DateBirthday.DayOfYear ? 1 : 0) < 35)
+            .ToList();        sw.Stop();
         Console.WriteLine($"\nВремя выборки по возрасту: \n{sw.Elapsed} List");
         
         sw.Restart();
-        var foundDictionaryClientAge = clientsBankDictionary.Where(clientDictionary => clientDictionary.Value.Age < 35).ToList();
-        sw.Stop();
+        var foundDictionaryClientAge = clientsBankDictionary.Where(clientDictionary => dateNow.Year - clientDictionary.Value.DateBirthday.Year -
+                (dateNow.DayOfYear < clientDictionary.Value.DateBirthday.DayOfYear ? 1 : 0) < 35)
+            .ToList();        sw.Stop();
         Console.WriteLine($"{sw.Elapsed} Dictionary");
         
         sw.Restart();

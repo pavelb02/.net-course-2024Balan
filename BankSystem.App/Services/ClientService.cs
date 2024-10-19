@@ -120,15 +120,20 @@ public class ClientService
         {
             throw new ArgumentException("Номер паспорта не может быть null, пустым или состоять только из пробелов.", nameof(client.NumPassport));
         }
-
-        if (client.Age < 18)
+        var dateNow = DateTime.Now;
+        int age = dateNow.Year - client.DateBirthday.Year;
+        if (dateNow.DayOfYear < client.DateBirthday.DayOfYear)
         {
-            throw new PersonAgeException(client.Age);
+            age--;
+        }
+        if (age < 18)
+        {
+            throw new PersonAgeException(age);
         }
 
-        if (client.Age <= 0)
+        if (age <= 0)
         {
-            throw new ArgumentOutOfRangeException(nameof(client.Age), "Возраст должен быть положительным.");
+            throw new ArgumentOutOfRangeException(nameof(age), "Возраст должен быть положительным.");
         }
 
         return true;

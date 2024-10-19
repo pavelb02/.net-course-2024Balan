@@ -14,7 +14,7 @@ public class ClientEntityTypeConfiguration : IEntityTypeConfiguration<Client>
         builder.Property(p => p.Surname).HasMaxLength(100).IsRequired();
         builder.Property(p => p.NumPassport).IsRequired();
         builder.Property(p => p.Phone).IsRequired();
-        builder.Property(p => p.DateBirthday).IsRequired();
+        builder.Property(p => p.DateBirthday).HasColumnType("date").IsRequired();
 
        builder.HasKey(p => p.Id);
         builder.HasMany(c => c.AccountsClient).WithOne(co => co.Client).HasForeignKey(a => a.ClientId);

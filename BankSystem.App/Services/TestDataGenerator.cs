@@ -17,8 +17,7 @@ public class TestDataGenerator
             .RuleFor(x => x.NumPassport, (faker, _) => faker.Random.Int(100000, 999999).ToString())
             .RuleFor(x => x.Phone, (faker, _) => faker.Person.Phone)
             .RuleFor(x => x.DateBirthday, (faker, _) => 
-                DateTime.SpecifyKind(faker.Date.Between(DateTime.Now.AddYears(-50), DateTime.Now.AddYears(-18)), DateTimeKind.Utc))
-            .RuleFor(x => x.Age, (faker, client) => CalculateAge(client.DateBirthday));
+                DateTime.SpecifyKind(faker.Date.Between(DateTime.Now.AddYears(-50), DateTime.Now.AddYears(-18)).Date, DateTimeKind.Utc));
 
         return faker.Generate(count);
     }
@@ -86,12 +85,9 @@ public class TestDataGenerator
             .RuleFor(x => x.Phone, (faker, _) => faker.Person.Phone)
             .RuleFor(x => x.Position, (faker, _) => faker.PickRandom(positions))
             .RuleFor(x => x.Salary, (faker, _) => (int)faker.Finance.Amount(100, 10000))
-            .RuleFor(x => x.StartDate, (faker, _) => 
-                DateTime.SpecifyKind(faker.Date.Past(15), DateTimeKind.Utc))
-            .RuleFor(x => x.DateBirthday,
-                (faker, _) => 
-                    DateTime.SpecifyKind(faker.Date.Between(DateTime.Now.AddYears(-50), DateTime.Now.AddYears(-18)), DateTimeKind.Utc))
-            .RuleFor(x => x.Age, (faker, employee) => CalculateAge(employee.DateBirthday));
+            .RuleFor(x => x.StartDate, (faker, _) => DateTime.SpecifyKind(faker.Date.Past(15).Date, DateTimeKind.Utc))
+            .RuleFor(x => x.DateBirthday, (faker, _) =>
+                DateTime.SpecifyKind(faker.Date.Between(DateTime.Now.AddYears(-50), DateTime.Now.AddYears(-18)).Date, DateTimeKind.Utc));
 
         return faker.Generate(count);
     }

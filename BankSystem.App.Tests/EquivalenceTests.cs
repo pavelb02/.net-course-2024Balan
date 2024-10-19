@@ -46,7 +46,7 @@ public class EquivalenceTests
         var clientsBankDictionaryAccount =
             testDataGenerator.GenerateClientsBankDictionaryAccount(clientsBankList, currencies);
         var client = clientsBankDictionaryAccount.Keys.First();
-        var newClient = new Client(client.Name, client.Surname, client.NumPassport, client.Age, client.Phone,
+        var newClient = new Client(client.Name, client.Surname, client.NumPassport, client.Phone,
               client.DateBirthday);
         //Act
         Account result = clientsBankDictionaryAccount[newClient];
@@ -61,7 +61,7 @@ public class EquivalenceTests
         var clientsBankList = testDataGenerator.GenerateClientsBankList(10);
         var clientsBankDictionaryAccount = testDataGenerator.GenerateClientsBankDictionaryMultiAccount(clientsBankList);
         var client = clientsBankDictionaryAccount.Keys.First();
-        var newClient = new Client(client.Name, client.Surname, client.NumPassport, client.Age, client.Phone, client.DateBirthday);
+        var newClient = new Client(client.Name, client.Surname, client.NumPassport, client.Phone, client.DateBirthday);
         //Act
         Account[] result = clientsBankDictionaryAccount[newClient];
         //Assert
@@ -74,7 +74,7 @@ public class EquivalenceTests
         //Arrange
         var employeesBankList = testDataGenerator.GenerateEmployeesBankList(10, positions);
         var employee = employeesBankList.First();
-        var newEmployee = new Employee(employee.Name, employee.Surname, employee.NumPassport, employee.Age,
+        var newEmployee = new Employee(employee.Name, employee.Surname, employee.NumPassport,
             employee.Phone,
             employee.Position, employee.StartDate, employee.Salary, employee.DateBirthday);
         //Act

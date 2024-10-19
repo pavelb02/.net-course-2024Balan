@@ -142,14 +142,16 @@ public class ClientStorage : IClientStorage
 
     public Client? SearchYoungClient()
     {
-        return _dbContext.Clients.MinBy(c => c.Age);
+        return _dbContext.Clients.MinBy(c => c.DateBirthday);
     }
     public Client? SearchOldClient()
     {
-        return _dbContext.Clients.MaxBy(c => c.Age);
+        return _dbContext.Clients.MaxBy(c => c.DateBirthday);
     }
     public int SearchAverageAgeClient()
     {
-        return (int)_dbContext.Clients.Average(c => c.Age);
+        var dateNow = DateTime.Now;
+        return (int)_dbContext.Clients.Average(c => dateNow.Year - c.DateBirthday.Year -
+                                                    (dateNow.DayOfYear < c.DateBirthday.DayOfYear ? 1 : 0));
     }
 }

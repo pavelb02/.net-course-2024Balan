@@ -6,16 +6,14 @@ public class Person
     public string Name { get; set; }
     public string Surname { get; set; }
     public string NumPassport { get; set; }
-    public int Age { get; private set; }
     public string Phone { get; set; }
     public DateTime DateBirthday { get; set; }
 
-    protected Person(string name, string surname, string numPassport, int age, string phone, DateTime dateBirthday)
+    protected Person(string name, string surname, string numPassport, string phone, DateTime dateBirthday)
     {
         Name = name;
         Surname = surname;
         NumPassport = numPassport;
-        Age = CalculateAge(dateBirthday);
         Phone = phone;
         DateBirthday = dateBirthday.ToUniversalTime();
     }
