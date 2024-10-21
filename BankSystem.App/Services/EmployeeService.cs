@@ -69,32 +69,42 @@ public class EmployeeService
     {
         _employeeStorage.Delete(employeeId);
     }
-  
+
     private static bool ValidateAddEmployee(Employee employee)
     {
         if (string.IsNullOrWhiteSpace(employee.Name))
         {
-            throw new ArgumentException("Имя не может быть null, пустым или состоять только из пробелов.", nameof(employee.Name));
+            throw new ArgumentException("Имя не может быть null, пустым или состоять только из пробелов.",
+                nameof(employee.Name));
         }
 
         if (string.IsNullOrWhiteSpace(employee.Name))
         {
-            throw new ArgumentException("Фамиилия не может быть null, пустой или состоять только из пробелов.", nameof(employee.Surname));
+            throw new ArgumentException("Фамиилия не может быть null, пустой или состоять только из пробелов.",
+                nameof(employee.Surname));
         }
 
         if (string.IsNullOrWhiteSpace(employee.NumPassport))
         {
-            throw new ArgumentException("Номер паспорта не может быть null, пустым или состоять только из пробелов.", nameof(employee.NumPassport));
+            throw new ArgumentException("Номер паспорта не может быть null, пустым или состоять только из пробелов.",
+                nameof(employee.NumPassport));
         }
 
-        if (employee.Age < 18)
+        var dateNow = DateTime.Now;
+        int age = dateNow.Year - employee.DateBirthday.Year;
+        if (dateNow.DayOfYear < employee.DateBirthday.DayOfYear)
         {
-            throw new PersonAgeException(employee.Age);
+            age--;
         }
 
-        if (employee.Age <= 0)
+        if (age < 18)
         {
-            throw new ArgumentOutOfRangeException(nameof(employee.Age), "Возраст должен быть положительным.");
+            throw new PersonAgeException(age);
+        }
+
+        if (age <= 0)
+        {
+            throw new ArgumentOutOfRangeException(nameof(age), "Возраст должен быть положительным.");
         }
 
         return true;

@@ -29,11 +29,11 @@ public class ClientStorageTests
             _clientStorage.Add(client);
         }
         
-        var youngClient = clientsBankList.MinBy(c => c.Age);
+        var youngClient = clientsBankList.MinBy(c => c.DateBirthday);
         //Act
         var youngClientMethod = _clientStorage.SearchYoungClient();
         //Assert
-        Assert.Equal(youngClient.Age, youngClientMethod.Age);
+        Assert.Equal(youngClient.DateBirthday, youngClientMethod.DateBirthday);
     }
     [Fact]
     public void SearchOldClientPositiv()
@@ -45,11 +45,11 @@ public class ClientStorageTests
             _clientStorage.Add(client);
         }
         
-        var oldClient = clientsBankList.MaxBy(c => c.Age);
+        var oldClient = clientsBankList.MaxBy(c => c.DateBirthday);
         //Act
         var oldClientMethod = _clientStorage.SearchOldClient();
         //Assert
-        Assert.Equal(oldClient.Age, oldClientMethod.Age);
+        Assert.Equal(oldClient.DateBirthday, oldClientMethod.DateBirthday);
     }
     [Fact]
     public void SearchAverageClientPositiv()
@@ -60,12 +60,13 @@ public class ClientStorageTests
         {
             _clientStorage.Add(client);
         }
-        
-        var averageAgeClient = (int)clientsBankList.Average(c => c.Age);
+        var dateNow = DateTime.Now;
+        var averageAge = (int)clientsBankList.Average(c => dateNow.Year - c.DateBirthday.Year -
+                                                           (dateNow.DayOfYear < c.DateBirthday.DayOfYear ? 1 : 0));
         //Act
         var averageAgeClientMethod = _clientStorage.SearchAverageAgeClient();
         //Assert
-        Assert.Equal(averageAgeClient, averageAgeClientMethod);
+        Assert.Equal(averageAge, averageAgeClientMethod);
     }
 }
 
@@ -95,11 +96,11 @@ public class EmployeeStorageTests
         {
             _employeeStorage.Add(employee);
         }
-        var youngEmployee = employeesBankList.MinBy(c => c.Age);
+        var youngEmployee = employeesBankList.MinBy(e => e.DateBirthday);
         //Act
         var youngEmployeeMethod = _employeeStorage.SearchYoungEmployee();
         //Assert
-        Assert.Equal(youngEmployee.Age, youngEmployeeMethod.Age);
+        Assert.Equal(youngEmployee.DateBirthday, youngEmployeeMethod.DateBirthday);
     }
     [Fact]
     public void SearchOldEmployeePositiv()
@@ -110,11 +111,11 @@ public class EmployeeStorageTests
         {
             _employeeStorage.Add(employee);
         }
-        var oldEmployee = employeesBankList.MaxBy(c => c.Age);
+        var oldEmployee = employeesBankList.MaxBy(e => e.DateBirthday);
         //Act
         var oldEmployeeMethod = _employeeStorage.SearchOldEmployee();
         //Assert
-        Assert.Equal(oldEmployee.Age, oldEmployeeMethod.Age);
+        Assert.Equal(oldEmployee.DateBirthday, oldEmployeeMethod.DateBirthday);
     }
     [Fact]
     public void SearchAverageEmployeePositiv()
@@ -125,10 +126,12 @@ public class EmployeeStorageTests
         {
             _employeeStorage.Add(employee);
         }
-        var averageAgeEmployee = (int)employeesBankList.Average(c => c.Age);
+        var dateNow = DateTime.Now;
+        var averageAge = (int)employeesBankList.Average(e => dateNow.Year - e.DateBirthday.Year -
+                                                        (dateNow.DayOfYear < e.DateBirthday.DayOfYear ? 1 : 0));
         //Act
         var averageAgeEmployeeMethod = _employeeStorage.SearchAverageAgeEmployee();
         //Assert
-        Assert.Equal(averageAgeEmployee, averageAgeEmployeeMethod);
+        Assert.Equal(averageAge, averageAgeEmployeeMethod);
     }
 }
