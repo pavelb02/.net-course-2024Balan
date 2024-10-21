@@ -23,6 +23,7 @@ public class ExportService
             dirInfo.Create();
         }
         string fullPath = Path.Combine(_pathToDirectory, _csvFileName);
+        
         using (FileStream fileStream = new FileStream(fullPath, FileMode.OpenOrCreate))
         {
             using (StreamWriter streamWriter = new StreamWriter(fileStream))
@@ -57,7 +58,8 @@ public class ExportService
     public List<Client> ReadClientsFromCsv()
     {
         string fullPath = Path.Combine(_pathToDirectory, _csvFileName);
-        List<Client> readClients = new List<Client>();
+        List<Client> clientsFromCsv = new List<Client>();
+        
         using (FileStream fileStream = new FileStream(fullPath, FileMode.OpenOrCreate))
         {
             using (StreamReader streamReader = new StreamReader(fileStream))
@@ -66,7 +68,7 @@ public class ExportService
                 {
                     // 1 вариант
                     reader.Context.RegisterClassMap<ClientMap>();
-                    readClients = reader.GetRecords<Client>().ToList();
+                    clientsFromCsv = reader.GetRecords<Client>().ToList();
 
                     // 2 вариант
                     /*
@@ -74,10 +76,10 @@ public class ExportService
                     reader.ReadHeader();
                     while (reader.Read())
                     {
-                        readClients.Add(reader.GetRecord<Client>());
+                        clientsFromCsv.Add(reader.GetRecord<Client>());
                     }
                     */
-                    return readClients;
+                    return clientsFromCsv;
                 }
             }
         }

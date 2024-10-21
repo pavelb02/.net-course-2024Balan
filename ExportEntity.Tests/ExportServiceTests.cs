@@ -22,15 +22,17 @@ public class ExportServiceTests
     public void WriteClientsToCsvAndReadFromCsvTest()
     {
         //Arrange
-        List<Client> clients = new (_clientService.FilterClients(new SearchRequest()));
+        List<Client> clientsFromDb = new (_clientService.FilterClients(new SearchRequest()));
         string pathToDirectory = Path.Combine("D:", "Программирование","Dex backend 2024", "Practice",".net-course-2024Balan", "Tool");
         string fileName = "clients.csv";
         ExportService exportService = new ExportService(pathToDirectory, fileName);
+        
         //Act
-        exportService.WriteClientsToCsv(clients);
+        exportService.WriteClientsToCsv(clientsFromDb);
         List<Client> clientsFromFile = exportService.ReadClientsFromCsv();
+        
         //Assert
-        Assert.Equal(clients, clientsFromFile);
+        Assert.Equal(clientsFromDb, clientsFromFile);
     }
     [Fact]
     public void ReadClientsFromCsvAndWriteToDbTest()
@@ -40,6 +42,7 @@ public class ExportServiceTests
         string fileName = "clients.csv";
         ExportService exportService = new ExportService(pathToDirectory, fileName);
         List<Client> clientsFromFile = exportService.ReadClientsFromCsv();
+        
         //Act
         foreach (var client in clientsFromFile)
         {
