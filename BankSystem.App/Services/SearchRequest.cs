@@ -8,4 +8,6 @@ public class SearchRequest
     public string NumPassport { get; set; }
     public DateTime? DateStart { get; set; }
     public DateTime? DateEnd { get; set; }
+    public int PageNumber { get; set; }
+    public int PageSize { get; set; }
 }

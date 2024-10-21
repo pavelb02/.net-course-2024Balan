@@ -2,12 +2,14 @@
 
 namespace BankSystem.Domain.Models;
 
-public struct Currency
+public class Currency
 {
+    public Guid Id { get; set; } = Guid.NewGuid();
     public string Code { get; set; } // Код валюты (USD, EUR, RUB)
     public string Name { get; set; } // Название валюты (доллар США, евро, российский рубль)
     public string Symbol { get; set; } // Символ валюты ($, €, ₽)
     public decimal ExchangeRate { get; set; } // Стоимость валюты
+    public ICollection<Account> AccountsCurrency { get; set; }
 
     public Currency(string code, string name, string symbol, decimal exchangeRate)
     {

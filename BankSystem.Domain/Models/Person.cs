@@ -2,6 +2,7 @@
 
 public class Person
 {
+    public Guid Id { get; set; }
     public string Name { get; set; }
     public string Surname { get; set; }
     public string NumPassport { get; set; }
@@ -16,7 +17,7 @@ public class Person
         NumPassport = numPassport;
         Age = CalculateAge(dateBirthday);
         Phone = phone;
-        DateBirthday = dateBirthday;
+        DateBirthday = dateBirthday.ToUniversalTime();
     }
     protected Person (){}
     public int CalculateAge(DateTime dateBirthday)

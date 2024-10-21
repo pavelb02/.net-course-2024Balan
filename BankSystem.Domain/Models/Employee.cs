@@ -2,17 +2,15 @@ namespace BankSystem.Domain.Models;
 
 public class Employee : Person
 {
-    public Guid EmployeeId { get; set; }
     public string Position { get; set; }
     public DateTime StartDate { get; set; }
     public int Salary { get; set; }
-    public string Contract { get; set; }
+    public string Contract { get; set; } = "Contract";
 
     public Employee(string name, string surname, string numPassport, int age, string phone, string position,
         DateTime startDate, int salary, DateTime dateBirthday)
         : base(name, surname, numPassport, age, phone, dateBirthday)
     {
-        EmployeeId = Guid.NewGuid();
         Position = position;
         StartDate = startDate;
         Salary = salary;
@@ -34,16 +32,7 @@ public class Employee : Person
 
     public override int GetHashCode()
     {
-        int hashCode = Name?.GetHashCode() ?? 0;
-        hashCode = (hashCode * 31) ^ (Surname?.GetHashCode() ?? 0);
-        hashCode = (hashCode * 31) ^ (NumPassport?.GetHashCode() ?? 0);
-        hashCode = (hashCode * 31) ^ Age.GetHashCode();
-        hashCode = (hashCode * 31) ^ (Phone?.GetHashCode() ?? 0);
-        hashCode = (hashCode * 31) ^ (Position?.GetHashCode() ?? 0);
-        hashCode = (hashCode * 31) ^ Salary.GetHashCode();
-        hashCode = (hashCode * 31) ^ StartDate.GetHashCode();
-        hashCode = (hashCode * 31) ^ DateBirthday.GetHashCode();
-        return hashCode;
+        return HashCode.Combine(Id, NumPassport);
     }
 
     public override string ToString()

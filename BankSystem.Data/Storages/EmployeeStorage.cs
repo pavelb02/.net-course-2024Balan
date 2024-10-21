@@ -5,90 +5,104 @@ using BankSystem.Domain.Models;
 
 namespace BankSystem.Data.Storages;
 
-public class EmployeeStorage : IEmployeeStorage
+public class EmployeeStorage : IStorage<Employee, SearchRequest>
 {
-    private List<Employee> Employees { get; set; }
+
+    private BankSystemDbContext _dbContext;
     public EmployeeStorage()
     {
-        Employees = new List<Employee>();
+        _dbContext = new BankSystemDbContext();
     }
     
     public void Add(Employee employee)
     {
-        if (Employees.Any(e => e.EmployeeId == employee.EmployeeId))
-        {
-            throw new InvalidOperationException($"Сотрудник с ID {employee.EmployeeId} уже добавлен.");
-        }
+        if (_dbContext.Employees.Any(e => e.Id == employee.Id))
+            return;
 
-        Employees.Add(employee);
+        _dbContext.Employees.Add(employee);
+        _dbContext.SaveChanges();
     }
 
-    public List<Employee> Get(SearchRequest searchRequest)
+    public Employee GetById(Guid employeeId)
     {
-        IEnumerable<Employee> employees = Employees;
+        return _dbContext.Employees.FirstOrDefault(e => e.Id == employeeId);
+    }
+
+    public List<Employee> GetCollection(SearchRequest searchRequest)
+    {
+        IQueryable<Employee> request = _dbContext.Employees;
         if (!string.IsNullOrWhiteSpace(searchRequest.Name))
         {
-            employees = employees.Where(e => e.Name == searchRequest.Name);
+            request = request.Where(e => e.Name == searchRequest.Name);
         }
 
         if (!string.IsNullOrWhiteSpace(searchRequest.Surname))
         {
-            employees = employees.Where(e => e.Surname == searchRequest.Surname);
+            request = request.Where(e => e.Surname == searchRequest.Surname);
         }
 
         if (!string.IsNullOrWhiteSpace(searchRequest.Phone))
         {
-            employees = employees.Where(e => e.Phone == searchRequest.Phone);
+            request = request.Where(e => e.Phone == searchRequest.Phone);
         }
 
         if (!string.IsNullOrWhiteSpace(searchRequest.NumPassport))
         {
-            employees = employees.Where(e => e.NumPassport == searchRequest.NumPassport);
+            request = request.Where(e => e.NumPassport == searchRequest.NumPassport);
         }
 
         if (searchRequest.DateStart != null && searchRequest.DateEnd != null &&
             searchRequest.DateStart <= searchRequest.DateEnd)
         {
-            employees = employees.Where(e => 
+            request = request.Where(e => 
                 e.DateBirthday >= searchRequest.DateStart && e.DateBirthday <= searchRequest.DateEnd); 
         }
-        return employees.ToList();
+        //var countRecords = request.Count();
+        
+        var employees = request
+            .OrderBy(c => c.Surname).ThenBy(c => c.Name)
+            .Skip((searchRequest.PageNumber - 1) * searchRequest.PageSize)
+            .Take(searchRequest.PageSize)
+            .ToList();
+        return employees;
     }
 
-    public void Update(Employee employee)
+    public void Update(Guid employeeId, Employee employee)
     {
-        var oldEmployee = Employees.FirstOrDefault(e => e.EmployeeId == employee.EmployeeId);
+        var updateEmployee = _dbContext.Employees.FirstOrDefault(e => e.Id == employeeId);
+
+        if (updateEmployee == null) return;
+        
+        updateEmployee.Name = employee.Name;
+        updateEmployee.Surname = employee.Surname;
+        updateEmployee.Phone = employee.Phone;
+        updateEmployee.NumPassport = employee.NumPassport;
+        updateEmployee.DateBirthday = employee.DateBirthday;
+        updateEmployee.Position = employee.Position;
+        updateEmployee.Salary = employee.Salary;
+        
+        _dbContext.SaveChanges();
+    }
+
+    public void Delete(Guid employeeId)
+    {
+        var employee = _dbContext.Employees.FirstOrDefault(e => e.Id == employeeId);
+        if (employee == null) return;
+        _dbContext.Employees.Remove(employee);
+        
+        _dbContext.SaveChanges();
+    }
     
-        if (oldEmployee != null)
-        {
-            oldEmployee.Name = employee.Name;
-            oldEmployee.Surname = employee.Surname;
-            oldEmployee.Phone = employee.Phone;
-            oldEmployee.NumPassport = employee.NumPassport;
-            oldEmployee.DateBirthday = employee.DateBirthday;
-            oldEmployee.Position = employee.Position;
-            oldEmployee.Salary = employee.Salary;
-        }
-        else
-        {
-            throw new EntityNotFoundException("Сотрудник не найден с данным ID: " + employee.EmployeeId);
-        }
-    }
-
-    public void Delete(Employee employee)
-    {
-        Employees.Remove(employee);
-    }
     public Employee? SearchYoungEmployee()
     {
-        return Employees.MinBy(c => c.Age);
+        return _dbContext.Employees.MinBy(c => c.Age);
     }
     public Employee? SearchOldEmployee()
     {
-        return Employees.MaxBy(c => c.Age);
+        return _dbContext.Employees.MaxBy(c => c.Age);
     }
-    public int? SearchAverageAgeEmployee()
+    public int SearchAverageAgeEmployee()
     {
-        return (int)Employees.Average(c => c.Age);
+        return (int)_dbContext.Employees.Average(c => c.Age);
     }
 }
