@@ -30,7 +30,7 @@ public class ClientService
         _clientStorage.DeleteAccount(accountId);
     }
 
-    public void AddClients(Client client, string currencyCode)
+    public void AddClient(Client client, string currencyCode)
     {
         try
         {

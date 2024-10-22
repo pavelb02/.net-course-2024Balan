@@ -18,7 +18,7 @@ public class EmployeeEntityTypeConfiguration : IEntityTypeConfiguration<Employee
 
         builder.Property(c => c.Position);
         builder.Property(c => c.Salary);
-        builder.Property(c => c.StartDate);
+        builder.Property(c => c.StartDate).HasColumnType("date");
         builder.Property(c => c.Contract);
 
         builder.HasKey(p => p.Id);

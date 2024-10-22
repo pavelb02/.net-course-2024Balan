@@ -1,87 +1,107 @@
 ﻿using System.Globalization;
+using System.Text.Json;
 using BankSystem.Domain.Models;
 using CsvHelper;
 
 namespace ExportEntity;
 
-public class ExportService
+public class ExportService<T> where T:Person
 {
-    private string _pathToDirectory { get; set; }
-    private string _csvFileName { get; set; }
+    private string PathToDirectory { get; set; }
+    private string CsvFileName { get; set; }
 
     public ExportService(string pathToDirectory, string csvFileName)
     {
-        _pathToDirectory = pathToDirectory;
-        _csvFileName = csvFileName;
+        PathToDirectory = pathToDirectory;
+        CsvFileName = csvFileName;
     }
-    
-    public void WriteClientsToCsv(List<Client> clients)
+
+    public ExportService()
     {
-        DirectoryInfo dirInfo = new DirectoryInfo(_pathToDirectory);
+    }
+
+    public void WriteItemsToCsv(List<T> items)
+    {
+        DirectoryInfo dirInfo = new DirectoryInfo(PathToDirectory);
         if (!dirInfo.Exists)
         {
             dirInfo.Create();
         }
-        string fullPath = Path.Combine(_pathToDirectory, _csvFileName);
-        
+
+        var fullPath = Path.Combine(PathToDirectory, CsvFileName);
+
         using (FileStream fileStream = new FileStream(fullPath, FileMode.OpenOrCreate))
         {
             using (StreamWriter streamWriter = new StreamWriter(fileStream))
             {
                 using (var writer = new CsvWriter(streamWriter, CultureInfo.InvariantCulture))
                 {
-                    writer.WriteField(nameof(Client.Id));
-                    writer.WriteField(nameof(Client.Name));
-                    writer.WriteField(nameof(Client.Surname));
-                    writer.WriteField(nameof(Client.NumPassport));
-                    writer.WriteField(nameof(Client.Phone));
-                    writer.WriteField(nameof(Client.DateBirthday));
-    
+                    writer.WriteHeader<T>();
                     writer.NextRecord();
 
-                    foreach (var client in clients)
+                    foreach (var item in items)
                     {
-                        writer.WriteField(client.Id);
-                        writer.WriteField(client.Name);
-                        writer.WriteField(client.Surname);
-                        writer.WriteField(client.NumPassport);
-                        writer.WriteField(client.Phone);
-                        writer.WriteField(client.DateBirthday.ToString("yyyy-MM-dd"));
-        
+                        writer.WriteRecord(item);
                         writer.NextRecord();
                     }
+
                     writer.Flush();
                 }
             }
         }
     }
-    public List<Client> ReadClientsFromCsv()
+
+    public List<T> ReadItemsFromCsv()
     {
-        string fullPath = Path.Combine(_pathToDirectory, _csvFileName);
-        List<Client> clientsFromCsv = new List<Client>();
-        
+        string fullPath = Path.Combine(PathToDirectory, CsvFileName);
+
         using (FileStream fileStream = new FileStream(fullPath, FileMode.OpenOrCreate))
         {
             using (StreamReader streamReader = new StreamReader(fileStream))
             {
                 using (var reader = new CsvReader(streamReader, CultureInfo.InvariantCulture))
                 {
-                    // 1 вариант
-                    reader.Context.RegisterClassMap<ClientMap>();
-                    clientsFromCsv = reader.GetRecords<Client>().ToList();
+                    var itemsFromCsv = reader.GetRecords<T>().ToList();
 
-                    // 2 вариант
-                    /*
-                    reader.Read();
-                    reader.ReadHeader();
-                    while (reader.Read())
-                    {
-                        clientsFromCsv.Add(reader.GetRecord<Client>());
-                    }
-                    */
-                    return clientsFromCsv;
+                    return itemsFromCsv;
                 }
             }
+        }
+    }
+
+    public void WriteToJson(List<T> items, string fullPath)
+    {
+        using (var fileStream = new FileStream(fullPath, FileMode.OpenOrCreate))
+        {
+            JsonSerializer.Serialize(fileStream, items);
+        }
+    }
+    
+    public List<T> ReadItemsFromJson(string fullPath)
+    {
+        using (var fileStream = new FileStream(fullPath, FileMode.OpenOrCreate))
+        {
+            var items = JsonSerializer.Deserialize<List<T>>(fileStream);
+            
+            return items;
+        }
+    }
+    
+    public void WriteToJson(T item, string fullPath)
+    {
+        using (var fileStream = new FileStream(fullPath, FileMode.OpenOrCreate))
+        {
+            JsonSerializer.Serialize(fileStream, item);
+        }
+    }
+    
+    public T ReadItemFromJson(string fullPath)
+    {
+        using (var fileStream = new FileStream(fullPath, FileMode.OpenOrCreate))
+        {
+            var item = JsonSerializer.Deserialize<T>(fileStream);
+
+            return item;
         }
     }
 }

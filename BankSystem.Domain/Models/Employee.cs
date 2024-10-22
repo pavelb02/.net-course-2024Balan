@@ -2,22 +2,26 @@ namespace BankSystem.Domain.Models;
 
 public class Employee : Person
 {
-    public string Position { get; set; }
-    public DateTime StartDate { get; set; }
-    public int Salary { get; set; }
-    public string Contract { get; set; } = "Contract";
-
     public Employee(string name, string surname, string numPassport, string phone, string position,
         DateTime startDate, int salary, DateTime dateBirthday)
         : base(name, surname, numPassport, phone, dateBirthday)
     {
         Position = position;
-        StartDate = startDate;
+        StartDate = startDate.ToUniversalTime();;
         Salary = salary;
         Contract = string.Empty;
     }
 
-    public Employee() { }
+    public string Position { get; set; }
+    public DateTime StartDate { get; set; }
+    public int Salary { get; set; }
+    public string Contract { get; set; } = "Contract";
+
+
+
+    public Employee()
+    {
+    }
 
     public override bool Equals(object? obj)
     {

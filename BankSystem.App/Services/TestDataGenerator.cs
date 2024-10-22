@@ -10,7 +10,7 @@ public class TestDataGenerator
 {
     public List<Client> GenerateClientsBankList(int count)
     {
-        Faker<Client> faker = new Faker<Client>("ru")
+        Faker<Client> faker = new Faker<Client>("en")
             .RuleFor(x => x.Id, (faker, _) => faker.Random.Guid())
             .RuleFor(x => x.Name, (faker, _) => faker.Person.FirstName)
             .RuleFor(x => x.Surname, (faker, _) => faker.Person.LastName)
@@ -29,7 +29,7 @@ public class TestDataGenerator
     }
     public Dictionary<Client, Account> GenerateClientsBankDictionaryAccount(List<Client> clientsList, Currency[] currencies)
     {
-        var faker = new Faker<Account>("ru")
+        var faker = new Faker<Account>("en")
             .RuleFor(x => x.Id, (faker, _) => faker.Random.Guid())
             .RuleFor(x => x.Amount, faker => faker.Finance.Amount(100, 10000))
             .RuleFor(x => x.Currency,faker => faker.PickRandom(currencies));
@@ -59,7 +59,7 @@ public class TestDataGenerator
         else
         {
             selectedCurrency = currencies.First(c => c.Code == "USD");
-        }        var faker = new Faker<Account>("ru")
+        }        var faker = new Faker<Account>("en")
             .RuleFor(x => x.Id, (faker, _) => faker.Random.Guid())
             .RuleFor(x => x.Amount, faker => faker.Finance.Amount(100, 10000))
             .RuleFor(x => x.Currency,_  => selectedCurrency);
@@ -77,7 +77,7 @@ public class TestDataGenerator
     }
     public List<Employee> GenerateEmployeesBankList(int count, string[] positions)
     {
-        Faker<Employee> faker = new Faker<Employee>("ru")
+        Faker<Employee> faker = new Faker<Employee>("en")
             .RuleFor(x => x.Id, (faker, _) => faker.Random.Guid())
             .RuleFor(x => x.Name, (faker, _) => faker.Person.FirstName)
             .RuleFor(x => x.Surname, (faker, _) => faker.Person.LastName)
