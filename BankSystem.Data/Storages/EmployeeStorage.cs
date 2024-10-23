@@ -17,7 +17,9 @@ public class EmployeeStorage : IStorage<Employee, SearchRequest>
     public void Add(Employee employee)
     {
         if (_dbContext.Employees.Any(e => e.Id == employee.Id))
-            return;
+        {
+            throw new InvalidOperationException($"Сотрудник с ID {employee.Id} уже существует.");
+        }
 
         _dbContext.Employees.Add(employee);
         _dbContext.SaveChanges();
@@ -25,7 +27,9 @@ public class EmployeeStorage : IStorage<Employee, SearchRequest>
 
     public Employee GetById(Guid employeeId)
     {
-        return _dbContext.Employees.FirstOrDefault(e => e.Id == employeeId);
+        var employee = _dbContext.Employees.FirstOrDefault(e => e.Id == employeeId);
+        if (employee == null) throw new ArgumentException($"Сотрудник с Id {employeeId} не найден.");
+        return employee;
     }
 
     public List<Employee> GetCollection(SearchRequest searchRequest)
@@ -58,13 +62,17 @@ public class EmployeeStorage : IStorage<Employee, SearchRequest>
                 e.DateBirthday >= searchRequest.DateStart && e.DateBirthday <= searchRequest.DateEnd); 
         }
         //var countRecords = request.Count();
-        
-        var employees = request
-            .OrderBy(c => c.Surname).ThenBy(c => c.Name)
-            .Skip((searchRequest.PageNumber - 1) * searchRequest.PageSize)
-            .Take(searchRequest.PageSize)
-            .ToList();
-        return employees;
+        if (searchRequest.PageSize != 0 && searchRequest.PageNumber != 0)
+        {
+            var employees = request
+                .OrderBy(c => c.Surname).ThenBy(c => c.Name)
+                .Skip((searchRequest.PageNumber - 1) * searchRequest.PageSize)
+                .Take(searchRequest.PageSize)
+                .ToList();
+            return employees;
+        }
+
+        return request.ToList();
     }
 
     public void Update(Guid employeeId, Employee employee)

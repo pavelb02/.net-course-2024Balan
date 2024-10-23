@@ -90,7 +90,7 @@ public class EquivalenceTests
         var clientsBankList = testDataGenerator.GenerateClientsBankList(3);
         foreach (var client in clientsBankList)
         {
-            _clientService.AddClients(client, _defaultCurrencyCode);
+            _clientService.AddClient(client, _defaultCurrencyCode);
         }
         //Act
         var clients = _clientStorage.GetCollection(new SearchRequest());
@@ -114,9 +114,9 @@ public class EquivalenceTests
         var clientsBankList = testDataGenerator.GenerateClientsBankList(1);
         clientsBankList.First().Name = "";
         //Act
-        _clientService.AddClients(clientsBankList.First(), _defaultCurrencyCode);     
+        _clientService.AddClient(clientsBankList.First(), _defaultCurrencyCode);     
         //Assert
-        Assert.Throws<Exception>(() => _clientService.AddClients(clientsBankList.First(), _defaultCurrencyCode));
+        Assert.Throws<Exception>(() => _clientService.AddClient(clientsBankList.First(), _defaultCurrencyCode));
         
     }
 
@@ -125,7 +125,7 @@ public class EquivalenceTests
     {
         //Arrange
         var clientsBankList = testDataGenerator.GenerateClientsBankList(1);
-        _clientService.AddClients(clientsBankList.First(),_defaultCurrencyCode);
+        _clientService.AddClient(clientsBankList.First(),_defaultCurrencyCode);
         _clientService.AddAccount(clientsBankList.First().Id, "USD");
         //Act
         var result = _clientService.GetClient(clientsBankList.First().Id).AccountsClient.Count;
@@ -138,7 +138,7 @@ public class EquivalenceTests
     {
         //Arrange
         var clientsBankList = testDataGenerator.GenerateClientsBankList(1);
-        _clientService.AddClients(clientsBankList.First(),_defaultCurrencyCode);
+        _clientService.AddClient(clientsBankList.First(),_defaultCurrencyCode);
         var newClient = new Client(clientsBankList.First().Id);
         newClient.Name = "Pavlik";
         newClient.Surname = "Balan";
@@ -155,7 +155,7 @@ public class EquivalenceTests
     {
         //Arrange
         var clientsBankList = testDataGenerator.GenerateClientsBankList(1);
-        _clientService.AddClients(clientsBankList.First(), _defaultCurrencyCode);
+        _clientService.AddClient(clientsBankList.First(), _defaultCurrencyCode);
         var searchRequest = new SearchRequest { NumPassport = clientsBankList[0].NumPassport };
         //Act
         var filteredClients =  _clientService.FilterClients(searchRequest);
@@ -168,7 +168,7 @@ public class EquivalenceTests
     public void AddEmployeePositiveListTest()
     {
         //Arrange
-        var employeesBankList = testDataGenerator.GenerateEmployeesBankList(10, positions);
+        var employeesBankList = testDataGenerator.GenerateEmployeesBankList(3, positions);
         _employeeService.AddEmployees(employeesBankList);
         //Act
         var employee = _employeeStorage.GetCollection(new SearchRequest());
@@ -187,5 +187,15 @@ public class EquivalenceTests
         var filteredEmployees = _employeeService.FilterEmployees(searchRequest);
         //Assert
         Assert.Equal(employeesBankList[0].NumPassport, filteredEmployees.First().NumPassport);
+    }
+    [Fact]
+    public void DeleteEmployeePositiveListTest()
+    {
+        //Arrange
+        var employeesBankList = _employeeService.FilterEmployees(new SearchRequest {});
+        //Act
+        _employeeService.DeleteEmployee(employeesBankList.First().Id);
+        //Assert
+        Assert.Throws<ArgumentException>(() => _employeeStorage.GetById(employeesBankList.First().Id));
     }
 }
