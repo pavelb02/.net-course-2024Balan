@@ -103,4 +103,40 @@ public class ThreadAndTaskTests
             }
         }
     }
+    
+    [Fact]
+    public void AddMoneyToAccountThreadsTest()
+    {
+        //Arrange
+        object locker = new();
+        Account account = new Account();
+
+        //Act
+        for (int i = 1; i <= 2; i++)
+        {
+            Thread myThread = new(AddMoney);
+            myThread.Name = $"Поток {i}";
+            myThread.Start();
+        }
+        
+        Thread.Sleep(1000);
+        Console.WriteLine($"{Thread.CurrentThread.Name}: Оновной поток завершается");
+        //Assert
+        Assert.Equal(2000, account.Amount);
+
+        void AddMoney()
+        {
+            Console.WriteLine($"{Thread.CurrentThread.Name} перед началом добавления");
+            for (int i = 0; i < 10; i++)
+            {
+                lock (locker)
+                {
+                    account.Amount += 100;
+                    Console.WriteLine($"{Thread.CurrentThread.Name}: добавил 100");  
+                }
+                Thread.Sleep(10);
+            }
+            Console.WriteLine($"{Thread.CurrentThread.Name} завершил  добавление");
+        }
+    }
 }
