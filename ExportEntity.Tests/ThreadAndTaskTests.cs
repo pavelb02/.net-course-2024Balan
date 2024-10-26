@@ -1,0 +1,106 @@
+﻿using System.Globalization;
+using BankSystem.App.Services;
+using BankSystem.Domain.Models;
+using System.Text.Json;
+using System.Threading;
+using CsvHelper;
+
+namespace ExportEntity.Tests;
+
+public class ThreadAndTaskTests
+{
+    private TestDataGenerator _testDataGenerator = new TestDataGenerator();
+
+    [Fact]
+    public void WriteClientsToCsvThreadsTest()
+    {
+        //Arrange
+        var pathToDirectory = Path.Combine("D:", "Программирование", "Dex backend 2024", "Practice",
+            ".net-course-2024Balan", "Tool");
+        var fullPath = "";
+        object locker = new();
+        var flag = true;
+        var countFile = 0;
+        var countThread = 5;
+        var countClients = 10;
+        var clientsFromFile = new List<Client>();
+
+        //Act
+        for (int i = 1; i <= countThread; i++)
+        {
+            Thread myThread = new(Serialize);
+            myThread.Name = $"Поток {i}";
+            myThread.Start();
+        }
+
+        Thread.Sleep(1000);
+
+        //Assert
+        for (int i = 1; i <= countFile; i++)
+        {
+            var fileName = "clientsCsvThread" + i + ".csv";
+            fullPath = Path.Combine(pathToDirectory, fileName);
+
+            using (var fileStream = new FileStream(fullPath, FileMode.Open))
+            using (var streamReader = new StreamReader(fileStream))
+            using (var csvReader = new CsvReader(streamReader, CultureInfo.InvariantCulture))
+            {
+
+                clientsFromFile.AddRange(csvReader.GetRecords<Client>().ToList());
+            }
+        }
+
+        Assert.Equal(countClients * countThread, clientsFromFile.Count);
+
+        void Serialize(object state)
+        {
+            List<Client> clientsList = _testDataGenerator.GenerateClientsBankList(countClients);
+
+            foreach (var client in clientsList)
+            {
+                //Console.WriteLine($"{Thread.CurrentThread.Name} перед lock");
+                lock (locker)
+                {
+                    if (flag)
+                    {
+                        countFile++;
+                        string fileName = "clientsCsvThread" + countFile + ".csv";
+                        fullPath = Path.Combine(pathToDirectory, fileName);
+
+                        using (var fileStream = new FileStream(fullPath, FileMode.Create))
+                        using (var streamWriter = new StreamWriter(fileStream))
+                        using (var writer = new CsvWriter(streamWriter, CultureInfo.InvariantCulture))
+                        {
+                            writer.WriteHeader<Client>();
+                            writer.NextRecord();
+                        }
+
+                        flag = false;
+                    }
+
+                    using (FileStream fileStream = new FileStream(fullPath, FileMode.Append))
+                    {
+                        using (StreamWriter streamWriter = new StreamWriter(fileStream))
+                        {
+                            using (var csvWriter = new CsvWriter(streamWriter, CultureInfo.InvariantCulture))
+                            {
+                                csvWriter.WriteRecord(client);
+                                csvWriter.NextRecord();
+                                Console.WriteLine($"В lock {Thread.CurrentThread.Name}: добавил элемент");
+
+                                csvWriter.Flush();
+
+                                long fileStreamSize = fileStream.Length;
+                                Console.WriteLine($"Объем данных в файле: {fileStreamSize} б");
+                                if (fileStream.Length > 1000)
+                                    flag = true;
+                            }
+                        }
+                    }
+                }
+                Thread.Sleep(10);
+                //Console.WriteLine($"Вышел из lock {Thread.CurrentThread.Name}");
+            }
+        }
+    }
+}
