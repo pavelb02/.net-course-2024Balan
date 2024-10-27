@@ -58,7 +58,6 @@ public class ThreadAndTaskTests
 
             foreach (var client in clientsList)
             {
-                //Console.WriteLine($"{Thread.CurrentThread.Name} перед lock");
                 lock (locker)
                 {
                     if (flag)
@@ -86,7 +85,6 @@ public class ThreadAndTaskTests
                             {
                                 csvWriter.WriteRecord(client);
                                 csvWriter.NextRecord();
-                                Console.WriteLine($"В lock {Thread.CurrentThread.Name}: добавил элемент");
 
                                 csvWriter.Flush();
 
@@ -99,7 +97,6 @@ public class ThreadAndTaskTests
                     }
                 }
                 Thread.Sleep(10);
-                //Console.WriteLine($"Вышел из lock {Thread.CurrentThread.Name}");
             }
         }
     }
@@ -120,13 +117,11 @@ public class ThreadAndTaskTests
         }
         
         Thread.Sleep(1000);
-        Console.WriteLine($"{Thread.CurrentThread.Name}: Оновной поток завершается");
         //Assert
         Assert.Equal(2000, account.Amount);
 
         void AddMoney()
         {
-            Console.WriteLine($"{Thread.CurrentThread.Name} перед началом добавления");
             for (int i = 0; i < 10; i++)
             {
                 lock (locker)
@@ -136,7 +131,6 @@ public class ThreadAndTaskTests
                 }
                 Thread.Sleep(10);
             }
-            Console.WriteLine($"{Thread.CurrentThread.Name} завершил  добавление");
         }
     }
 }
