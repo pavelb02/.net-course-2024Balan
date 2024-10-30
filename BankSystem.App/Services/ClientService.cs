@@ -35,7 +35,7 @@ public class ClientService
         try
         {
             if (! await ValidateAddClientAsync(client)) return;
-            var currencyId = await _currencyService.GetGurrencyAsync(currencyCode);
+            var currencyId = await _currencyService.GetCurrencyAsync(currencyCode);
             var account = new Account(client.Id, currencyId);
             client.AccountsClient.Add(account);
             await _clientStorage.AddAsync(client);
@@ -56,7 +56,7 @@ public class ClientService
         try
         {
             var client = await _clientStorage.GetByIdAsync(clientId);
-            var currencyId = await _currencyService.GetGurrencyAsync(currencyCode);
+            var currencyId = await _currencyService.GetCurrencyAsync(currencyCode);
             var account = new Account(client.Id, currencyId);
             await _clientStorage.AddAccountAsync(clientId, account);
         }
@@ -79,7 +79,7 @@ public class ClientService
             {
                 var client = await _clientStorage.GetByIdAsync(clientId);
                 var accounts = client.AccountsClient;
-                var currencyId = await _currencyService.GetGurrencyAsync("EUR");
+                var currencyId = await _currencyService.GetCurrencyAsync("EUR");
                 accounts.Add(new Account(clientId, currencyId));
                 foreach (var account in accounts)
                 {
@@ -103,6 +103,28 @@ public class ClientService
     {
         var filteredClients = await _clientStorage.GetCollectionAsync(searchRequest);
         return filteredClients;
+    }
+
+    public async Task<bool> Debit(WithdrawalRequest withdrawalRequest)
+    {
+        var client = await _clientStorage.GetByIdAsync(withdrawalRequest.ClientId);
+        var currencyId = await _currencyService.GetCurrencyAsync(withdrawalRequest.CurrencyCode);
+        var account = client.AccountsClient.FirstOrDefault(a => a.CurrencyId == currencyId);
+        if (account == null)
+        {
+            Console.WriteLine($"Аккаунт клиента с валютой {withdrawalRequest.CurrencyCode} не найден.");
+            return false;
+        }
+
+        if (account.Amount < withdrawalRequest.WithdrawalAmount)
+        {
+            Console.WriteLine("Недостаточно средств на счете.");
+            return false;
+        }
+        account.Amount -= withdrawalRequest.WithdrawalAmount;
+        
+        await _clientStorage.UpdateAsync(client.Id, client);
+        return true;
     }
 
     private static Task<bool> ValidateAddClientAsync(Client client)

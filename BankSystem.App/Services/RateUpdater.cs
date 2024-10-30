@@ -35,8 +35,7 @@ public class RateUpdater
                 {
                     foreach (var account in client.AccountsClient)
                     {
-                        account.Amount += 90;
-                        //await _clientStorage.UpdateAccountAsync(account.Id, account);
+                        account.Amount += account.Amount * (decimal)0.1;
                     }
 
                     await _clientStorage.UpdateAsync(client.Id, client);

@@ -179,6 +179,52 @@ public class EquivalenceTests
         Assert.Single(filteredClients);
         Assert.Equal(clientsBankList[0].NumPassport, filteredClients.First().NumPassport);
     }
+    
+    [Fact]
+    public async Task DebitAsyncPositiveTest()
+    {
+        //Arrange & Act
+        var pageSize = 5;
+        var iterationCount = 2;
+        var withdrawalAmount = 100;
+        var currencyCode = "USD";
+
+        var currencyId = await _currencyService.GetCurrencyAsync(currencyCode);
+        var clientBefore = await _clientService.FilterClientsAsync(new SearchRequest { PageNumber = 1, PageSize = 1 });
+        var amountBefore = clientBefore.First().AccountsClient.FirstOrDefault(a => a.CurrencyId == currencyId)!.Amount;
+        
+        for (int i = 0; i < iterationCount; i++)
+        {
+            var pageNumber = 1;
+            var flag = true;
+            while (flag)
+            {
+                var clients = await _clientStorage.GetCollectionAsync(new SearchRequest
+                    { PageSize = pageSize, PageNumber = pageNumber });
+                if (clients.Count < pageSize)
+                    flag = false;
+
+                foreach (var client in clients)
+                {
+                    var task = _clientService.Debit(new WithdrawalRequest
+                    {
+                        ClientId = client.Id,
+                        WithdrawalAmount = withdrawalAmount,
+                        CurrencyCode = currencyCode
+                    });
+
+                    await task; 
+                }
+
+                pageNumber++;
+            }
+        }
+
+        // Assert
+        var clientAfter = await _clientService.FilterClientsAsync(new SearchRequest { PageNumber = 1, PageSize = 1 });
+        var amountAfter = clientAfter.First().AccountsClient.FirstOrDefault(a => a.CurrencyId == currencyId);
+        Assert.Equal(amountBefore - withdrawalAmount - withdrawalAmount, amountAfter.Amount);
+    }
 
     [Fact]
     public async Task AddEmployeeAsyncPositiveListTest()

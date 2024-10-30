@@ -126,18 +126,6 @@ public class ClientStorage : IClientStorage
         client.AccountsClient.Add(account);
         await _dbContext.SaveChangesAsync();
     }
-    
-    public async Task UpdateAccountAsync(Guid accountId, Account account)
-    {
-        var existingAccount = await _dbContext.Accounts.FindAsync(accountId);
-        if (existingAccount == null)
-        {
-            throw new ArgumentException($"Аккаунт с Id {accountId} не найден.");
-        }
-
-        existingAccount.Amount = account.Amount;
-        await _dbContext.SaveChangesAsync();
-    }
 
     public async Task DeleteAccountAsync(Guid accountId)
     {

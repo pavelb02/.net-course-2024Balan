@@ -12,12 +12,12 @@ public class CurrencyService : ICurrencyService
     {
         _currencyStorage = currencyStorage;
     }
-    public async Task<Guid> GetGurrencyAsync(string currencyCode)
+    public async Task<Guid> GetCurrencyAsync(string currencyCode)
     {
         return await _currencyStorage.GetAsync(currencyCode);
     }
 
-    public async Task AddGurrencyAsync(string code, string name, string symbol, decimal exchangeRate)
+    public async Task AddCurrencyAsync(string code, string name, string symbol, decimal exchangeRate)
     {
         try
         {
