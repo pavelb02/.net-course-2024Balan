@@ -15,6 +15,7 @@ public class RateUpdater
     public async Task ChargeInterestAsync(decimal interest, CancellationToken token)
     {
         var pageSize = 5;
+        
         while (!token.IsCancellationRequested)
         {
             var pageNumber = 1;
@@ -34,7 +35,7 @@ public class RateUpdater
                 {
                     foreach (var account in client.AccountsClient)
                     {
-                        account.Amount += account.Amount * (decimal)0.1;
+                        account.Amount += account.Amount * interest;
                     }
 
                     await _clientStorage.UpdateAsync(client.Id, client);
@@ -46,7 +47,11 @@ public class RateUpdater
                     break;
             }
 
-            await Task.Delay(5000, token);
+            var dateNow = DateTime.Now;
+            var nextMonth = new DateTime(dateNow.Year, dateNow.Month, 1).AddMonths(1);
+            var delay = nextMonth - dateNow;
+
+            await Task.Delay(delay, token);
         }
     }
 }

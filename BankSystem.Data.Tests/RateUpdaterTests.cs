@@ -24,7 +24,7 @@ public class RateUpdaterTests
 
         //Act
         var updateTask = rateUdapter.ChargeInterestAsync(interest, token);
-        await Task.Delay(15100);
+        await Task.Delay(5000);
         cancelTokenSource.Cancel();
 
         //Assert
