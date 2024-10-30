@@ -18,13 +18,12 @@ public class RateUpdater
         while (!token.IsCancellationRequested)
         {
             var pageNumber = 1;
-            var flag = true;
-            while (flag)
+            
+            while (true)
             {
                 var clients = await _clientStorage.GetCollectionAsync(new SearchRequest
                     { PageSize = pageSize, PageNumber = pageNumber });
-                if (clients.Count < pageSize)
-                    flag = false;
+                
                 if (token.IsCancellationRequested)
                 {
                     Console.WriteLine("Операция прервана");
@@ -42,6 +41,9 @@ public class RateUpdater
                 }
 
                 pageNumber++;
+                
+                if (clients.Count < pageSize)
+                    break;
             }
 
             await Task.Delay(5000, token);
