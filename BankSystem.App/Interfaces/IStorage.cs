@@ -1,12 +1,13 @@
 ﻿using BankSystem.App.Services;
+using BankSystem.Domain.Models;
 
 namespace BankSystem.App.Interfaces;
 
 public interface IStorage<T, K>
 {
-    public void Add(T item);
-    public T GetById(Guid itemId);
-    public List<T> GetCollection(K searchRequest);
-    public void Update(Guid itemId, T item);
-    public void Delete(Guid itemId);
+    public Task AddAsync(T item);
+    public Task<T> GetByIdAsync(Guid itemId);
+    public Task<List<T>> GetCollectionAsync(K searchRequest);
+    public Task UpdateAsync(Guid itemId, T item);
+    public Task DeleteAsync(Guid itemId);
 }

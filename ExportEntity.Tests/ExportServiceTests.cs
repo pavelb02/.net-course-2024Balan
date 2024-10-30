@@ -6,28 +6,24 @@ namespace ExportEntity.Tests;
 
 public class ExportServiceTests
 {
-    private EmployeeStorage _employeeStorage;
     private EmployeeService _employeeService;
-    private ClientStorage _clientStorage;
     private ClientService _clientService;
-    private CurrencyService _currencyService;
-    private CurrencyStorage _currencyStorage;
 
     public ExportServiceTests()
     {
-        _employeeStorage = new EmployeeStorage();
-        _employeeService = new EmployeeService(_employeeStorage);
-        _currencyStorage = new CurrencyStorage();
-        _currencyService = new CurrencyService(_currencyStorage);
-        _clientStorage = new ClientStorage();
-        _clientService = new ClientService(_clientStorage, _currencyService);
+        var employeeStorage = new EmployeeStorage();
+        _employeeService = new EmployeeService(employeeStorage);
+        var currencyStorage = new CurrencyStorage();
+        var currencyService = new CurrencyService(currencyStorage);
+        var clientStorage = new ClientStorage();
+        _clientService = new ClientService(clientStorage, currencyService);
     }
     
     [Fact]
-    public void WriteClientsToCsvAndReadFromDbTest()
+    public async Task WriteClientsToCsvAndReadFromDbTest()
     {
         //Arrange
-        List<Client> clientsFromDb = new (_clientService.FilterClients(new SearchRequest()));
+        List<Client> clientsFromDb = new (await _clientService.FilterClientsAsync(new SearchRequest()));
         string pathToDirectory = Path.Combine("D:", "Программирование","Dex backend 2024", "Practice",".net-course-2024Balan", "Tool");
         string fileName = "clientsCsv.csv";
         ExportService<Client> exportService = new ExportService<Client>(pathToDirectory, fileName);
@@ -41,7 +37,7 @@ public class ExportServiceTests
     }
     
     [Fact]
-    public void ReadClientsFromCsvAndWriteToDbTest()
+    public async Task ReadClientsFromCsvAndWriteToDbTest()
     {
         //Arrange
         string pathToDirectory = Path.Combine("D:", "Программирование", "Dex backend 2024", "Practice", ".net-course-2024Balan", "Tool");
@@ -52,12 +48,12 @@ public class ExportServiceTests
         //Act
         foreach (var client in clientsFromFile)
         {
-            _clientService.AddClient(client, "USD");
+            await _clientService.AddClientAsync(client, "USD");
         }
         List<Client> clientsFromDb = new List<Client>();
         foreach (var client in clientsFromFile)
         {
-            clientsFromDb.Add(_clientService.GetClient(client.Id));
+            clientsFromDb.Add(await _clientService.GetClientAsync(client.Id));
         }
 
         //Assert
@@ -65,10 +61,10 @@ public class ExportServiceTests
     }
 
     [Fact]
-    public void WriteClientsToJsonAndReadClientsFromJsonTest()
+    public async Task WriteClientsToJsonAndReadClientsFromJsonTest()
     {
         //Arrange
-        List<Client> clientsFromDb = new (_clientService.FilterClients(new SearchRequest()));
+        List<Client> clientsFromDb = new (await _clientService.FilterClientsAsync(new SearchRequest()));
         var pathToDirectory = Path.Combine("D:", "Программирование", "Dex backend 2024", "Practice", ".net-course-2024Balan", "Tool");
         var fileName = "clientsJson.json";
         var fullPath = Path.Combine(pathToDirectory, fileName);
@@ -83,10 +79,10 @@ public class ExportServiceTests
     }
     
     [Fact]
-    public void WriteClientToJsonAndReadClientFromJsonTest()
+    public async Task WriteClientToJsonAndReadClientFromJsonTest()
     {
         //Arrange
-        List<Client> clientsFromDb = new (_clientService.FilterClients(new SearchRequest()));
+        List<Client> clientsFromDb = new (await _clientService.FilterClientsAsync(new SearchRequest()));
         var pathToDirectory = Path.Combine("D:", "Программирование", "Dex backend 2024", "Practice", ".net-course-2024Balan", "Tool");
         var fileName = "clientJson.json";
         var fullPath = Path.Combine(pathToDirectory, fileName);
@@ -101,10 +97,10 @@ public class ExportServiceTests
     }
     
     [Fact]
-    public void WriteEmployeesToCsvAndReadFromDbTest()
+    public async Task WriteEmployeesToCsvAndReadFromDbTest()
     {
         //Arrange
-        List<Employee> employeesFromDb = new (_employeeService.FilterEmployees(new SearchRequest {PageSize = 5, PageNumber = 1}));
+        List<Employee> employeesFromDb = new (await _employeeService.FilterEmployeesAsync(new SearchRequest {PageSize = 5, PageNumber = 1}));
         var pathToDirectory = Path.Combine("D:", "Программирование","Dex backend 2024", "Practice",".net-course-2024Balan", "Tool");
         var fileName = "employeesCsv.csv";
         ExportService<Employee> exportService = new ExportService<Employee>(pathToDirectory, fileName);
@@ -118,7 +114,7 @@ public class ExportServiceTests
     }
     
     [Fact]
-    public void ReadEmployeesFromCsvAndWriteToDbTest()
+    public async Task ReadEmployeesFromCsvAndWriteToDbTest()
     {
         //Arrange
         var pathToDirectory = Path.Combine("D:", "Программирование","Dex backend 2024", "Practice",".net-course-2024Balan", "Tool");
@@ -127,11 +123,11 @@ public class ExportServiceTests
         var employeesFromFile = exportService.ReadItemsFromCsv();
         
         //Act
-        _employeeService.AddEmployees(employeesFromFile);
+        await _employeeService.AddEmployeesAsync(employeesFromFile);
         var employeesFromDb = new List<Employee>();
         foreach (var employee in employeesFromFile)
         {
-            employeesFromDb.Add(_employeeService.GetEmployee(employee.Id));
+            employeesFromDb.Add(await _employeeService.GetEmployeeAsync(employee.Id));
         }
 
         //Assert
@@ -139,10 +135,10 @@ public class ExportServiceTests
     }
     
     [Fact]
-    public void WriteEmployeesToJsonAndReadEmployeesFromJsonTest()
+    public async Task WriteEmployeesToJsonAndReadEmployeesFromJsonTest()
     {
         //Arrange
-        List<Employee> employeesFromDb = new (_employeeService.FilterEmployees(new SearchRequest{PageSize = 3, PageNumber = 1}));
+        List<Employee> employeesFromDb = new (await _employeeService.FilterEmployeesAsync(new SearchRequest{PageSize = 3, PageNumber = 1}));
         var pathToDirectory = Path.Combine("D:", "Программирование", "Dex backend 2024", "Practice", ".net-course-2024Balan", "Tool");
         var fileName = "employeesJson.json";
         var fullPath = Path.Combine(pathToDirectory, fileName);
@@ -157,10 +153,10 @@ public class ExportServiceTests
     }
     
     [Fact]
-    public void WriteEmployeeToJsonAndReadEmployeeFromJsonTest()
+    public async Task WriteEmployeeToJsonAndReadEmployeeFromJsonTest()
     {
         //Arrange
-        List<Employee> employeesFromDb = new (_employeeService.FilterEmployees(new SearchRequest{PageSize = 3, PageNumber = 1}));
+        List<Employee> employeesFromDb = new (await _employeeService.FilterEmployeesAsync(new SearchRequest{PageSize = 3, PageNumber = 1}));
         var pathToDirectory = Path.Combine("D:", "Программирование", "Dex backend 2024", "Practice", ".net-course-2024Balan", "Tool");
         var fileName = "employeeJson.json";
         var fullPath = Path.Combine(pathToDirectory, fileName);

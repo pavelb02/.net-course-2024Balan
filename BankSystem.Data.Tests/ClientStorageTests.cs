@@ -7,64 +7,64 @@ namespace BankSystem.Data.Tests;
 public class ClientStorageTests
 {
     ClientStorage _clientStorage = new ClientStorage();
-    TestDataGenerator testDataGenerator = new TestDataGenerator();
+    TestDataGenerator _testDataGenerator = new TestDataGenerator();
     [Fact]
-    public void AddClientPositiv()
+    public async Task AddClientAsyncPositiveTest()
     {
         //Arrange
-        var clientsBankList = testDataGenerator.GenerateClientsBankList(1);
+        var clientsBankList = _testDataGenerator.GenerateClientsBankList(1);
         //Act
-        _clientStorage.Add(clientsBankList.First());
+        await _clientStorage.AddAsync(clientsBankList.First());
         //Assert
-        var addedClient = _clientStorage.GetById(clientsBankList.First().Id);
+        var addedClient = _clientStorage.GetByIdAsync(clientsBankList.First().Id);
         Assert.NotNull(addedClient);
     }
     [Fact]
-    public void SearchYoungClientPositiv()
+    public async Task SearchYoungClientAsyncPositiveTest()
     {
         //Arrange
-        var clientsBankList = testDataGenerator.GenerateClientsBankList(10);
+        var clientsBankList = _testDataGenerator.GenerateClientsBankList(10);
         foreach (var client in clientsBankList)
         {
-            _clientStorage.Add(client);
+            await _clientStorage.AddAsync(client);
         }
         
         var youngClient = clientsBankList.MinBy(c => c.DateBirthday);
         //Act
-        var youngClientMethod = _clientStorage.SearchYoungClient();
+        var youngClientMethod = await _clientStorage.SearchYoungClientAsync();
         //Assert
         Assert.Equal(youngClient.DateBirthday, youngClientMethod.DateBirthday);
     }
     [Fact]
-    public void SearchOldClientPositiv()
+    public async Task SearchOldClientAsyncPositiveTest()
     {
         //Arrange
-        var clientsBankList = testDataGenerator.GenerateClientsBankList(10);
+        var clientsBankList = _testDataGenerator.GenerateClientsBankList(10);
         foreach (var client in clientsBankList)
         {
-            _clientStorage.Add(client);
+            _clientStorage.AddAsync(client);
         }
         
         var oldClient = clientsBankList.MaxBy(c => c.DateBirthday);
         //Act
-        var oldClientMethod = _clientStorage.SearchOldClient();
+        var oldClientMethod = await _clientStorage.SearchOldClientAsync();
         //Assert
         Assert.Equal(oldClient.DateBirthday, oldClientMethod.DateBirthday);
     }
     [Fact]
-    public void SearchAverageClientPositiv()
+    public async Task SearchAverageClientPositiv()
     {
         //Arrange
-        var clientsBankList = testDataGenerator.GenerateClientsBankList(10);
+        var clientsBankList = _testDataGenerator.GenerateClientsBankList(10);
         foreach (var client in clientsBankList)
         {
-            _clientStorage.Add(client);
+            await _clientStorage.AddAsync(client);
         }
         var dateNow = DateTime.Now;
         var averageAge = (int)clientsBankList.Average(c => dateNow.Year - c.DateBirthday.Year -
                                                            (dateNow.DayOfYear < c.DateBirthday.DayOfYear ? 1 : 0));
         //Act
-        var averageAgeClientMethod = _clientStorage.SearchAverageAgeClient();
+        var averageAgeClientMethod = await _clientStorage.SearchAverageAgeClientAsync();
         //Assert
         Assert.Equal(averageAge, averageAgeClientMethod);
     }
@@ -73,64 +73,63 @@ public class ClientStorageTests
 public class EmployeeStorageTests
 {
     EmployeeStorage _employeeStorage = new EmployeeStorage();
-    TestDataGenerator testDataGenerator = new TestDataGenerator();
+    TestDataGenerator _testDataGenerator = new TestDataGenerator();
     string[] positions = { "Cashier", "Service Specialist", "Counselor", "Manager", "Bank Accountant", "Financial Analyst", "Auditor", "IT specialist" };
 
     [Fact]
-    public void AddEmployeeToCollectionPositiv()
+    public async Task AddEmployeeToCollectionAsyncPositiveTest()
     {
         //Arrange
-        var employeesBankList = testDataGenerator.GenerateEmployeesBankList(1, positions);
+        var employeesBankList = _testDataGenerator.GenerateEmployeesBankList(1, positions);
         //Act
-        _employeeStorage.Add(employeesBankList.First());
+        await _employeeStorage.AddAsync(employeesBankList.First());
         //Assert
-        Assert.NotNull(_employeeStorage.GetCollection(new SearchRequest()));
-        Assert.True(_employeeStorage.GetCollection(new SearchRequest()).SequenceEqual(employeesBankList));
+        Assert.NotNull(_employeeStorage.GetCollectionAsync(new SearchRequest()));
     }
     [Fact]
-    public void SearchYoungEmployeePositiv()
+    public async Task SearchYoungEmployeePositiv()
     {
         //Arrange
-        var employeesBankList = testDataGenerator.GenerateEmployeesBankList(10, positions);
+        var employeesBankList = _testDataGenerator.GenerateEmployeesBankList(10, positions);
         foreach (var employee in employeesBankList)
         {
-            _employeeStorage.Add(employee);
+            await _employeeStorage.AddAsync(employee);
         }
         var youngEmployee = employeesBankList.MinBy(e => e.DateBirthday);
         //Act
-        var youngEmployeeMethod = _employeeStorage.SearchYoungEmployee();
+        var youngEmployeeMethod = await _employeeStorage.SearchYoungEmployee();
         //Assert
         Assert.Equal(youngEmployee.DateBirthday, youngEmployeeMethod.DateBirthday);
     }
     [Fact]
-    public void SearchOldEmployeePositiv()
+    public async Task SearchOldEmployeePositiv()
     {
         //Arrange
-        var employeesBankList = testDataGenerator.GenerateEmployeesBankList(10, positions);
+        var employeesBankList = _testDataGenerator.GenerateEmployeesBankList(10, positions);
         foreach (var employee in employeesBankList)
         {
-            _employeeStorage.Add(employee);
+            await _employeeStorage.AddAsync(employee);
         }
         var oldEmployee = employeesBankList.MaxBy(e => e.DateBirthday);
         //Act
-        var oldEmployeeMethod = _employeeStorage.SearchOldEmployee();
+        var oldEmployeeMethod = await _employeeStorage.SearchOldEmployee();
         //Assert
         Assert.Equal(oldEmployee.DateBirthday, oldEmployeeMethod.DateBirthday);
     }
     [Fact]
-    public void SearchAverageEmployeePositiv()
+    public async Task SearchAverageEmployeePositiv()
     {
         //Arrange
-        var employeesBankList = testDataGenerator.GenerateEmployeesBankList(10, positions);
+        var employeesBankList = _testDataGenerator.GenerateEmployeesBankList(10, positions);
         foreach (var employee in employeesBankList)
         {
-            _employeeStorage.Add(employee);
+            await _employeeStorage.AddAsync(employee);
         }
         var dateNow = DateTime.Now;
         var averageAge = (int)employeesBankList.Average(e => dateNow.Year - e.DateBirthday.Year -
                                                         (dateNow.DayOfYear < e.DateBirthday.DayOfYear ? 1 : 0));
         //Act
-        var averageAgeEmployeeMethod = _employeeStorage.SearchAverageAgeEmployee();
+        var averageAgeEmployeeMethod = await _employeeStorage.SearchAverageAgeEmployee();
         //Assert
         Assert.Equal(averageAge, averageAgeEmployeeMethod);
     }

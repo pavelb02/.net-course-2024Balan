@@ -13,19 +13,19 @@ public class EmployeeService
         _employeeStorage = employeeStorage;
     }
 
-    public Employee GetEmployee(Guid employeeId)
+    public async Task<Employee> GetEmployeeAsync(Guid employeeId)
     {
-        return _employeeStorage.GetById(employeeId);
+        return await _employeeStorage.GetByIdAsync(employeeId);
     }
 
-    public void AddEmployees(List<Employee> employees)
+    public async Task AddEmployeesAsync(List<Employee> employees)
     {
         foreach (var employee in employees)
         {
             try
             {
-                if (ValidateAddEmployee(employee))
-                    _employeeStorage.Add(employee);
+                if (await ValidateAddEmployee(employee))
+                    await _employeeStorage.AddAsync(employee);
             }
             catch (ArgumentException ex)
             {
@@ -39,13 +39,13 @@ public class EmployeeService
         }
     }
 
-    public void UpdateEmployee(Guid employeeId, Employee newEmployee)
+    public async Task UpdateEmployeeAsync(Guid employeeId, Employee newEmployee)
     {
         try
         {
-            if (ValidateAddEmployee(newEmployee))
+            if (await ValidateAddEmployee(newEmployee))
             {
-                _employeeStorage.Update(employeeId, newEmployee);
+                await _employeeStorage.UpdateAsync(employeeId, newEmployee);
             }
         }
         catch (ArgumentException ex)
@@ -59,18 +59,18 @@ public class EmployeeService
         }
     }
 
-    public List<Employee> FilterEmployees(SearchRequest searchRequest)
+    public async Task<List<Employee>> FilterEmployeesAsync(SearchRequest searchRequest)
     {
-        var filteredEmployees = _employeeStorage.GetCollection(searchRequest);
+        var filteredEmployees = await _employeeStorage.GetCollectionAsync(searchRequest);
         return filteredEmployees;
     }
 
-    public void DeleteEmployee(Guid employeeId)
+    public async Task DeleteEmployeeAsync(Guid employeeId)
     {
-        _employeeStorage.Delete(employeeId);
+        await _employeeStorage.DeleteAsync(employeeId);
     }
 
-    private static bool ValidateAddEmployee(Employee employee)
+    private static Task<bool> ValidateAddEmployee(Employee employee)
     {
         if (string.IsNullOrWhiteSpace(employee.Name))
         {
@@ -107,6 +107,6 @@ public class EmployeeService
             throw new ArgumentOutOfRangeException(nameof(age), "Возраст должен быть положительным.");
         }
 
-        return true;
+        return Task.FromResult(true);
     }
 }

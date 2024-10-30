@@ -1,39 +1,40 @@
 ﻿using BankSystem.App.Interfaces;
 using BankSystem.Domain.Models;
+using Microsoft.EntityFrameworkCore;
 
 namespace BankSystem.Data.Storages;
 
 public class CurrencyStorage : ICurrencyStorage
 {
-    private BankSystemDbContext _dbContext;
+    private readonly BankSystemDbContext _dbContext;
 
     public CurrencyStorage()
     {
         _dbContext = new BankSystemDbContext();
     }
 
-    public Guid Get(string currencyCode)
+    public async Task<Guid> GetAsync(string currencyCode)
     {
-        var currency = _dbContext.Currencies.FirstOrDefault(c => c.Code == currencyCode);
+        var currency = await _dbContext.Currencies.FirstOrDefaultAsync(c => c.Code == currencyCode);
         if (currency==null) throw new ArgumentException($"Валюта с кодом {currencyCode} не найдена.");
         return currency.Id;
     }
 
-    public void Add(Currency currency)
+    public async Task AddAsync(Currency currency)
     {
-        if (_dbContext.Currencies.Any(c => c.Code == currency.Code))
+        if (await _dbContext.Currencies.AnyAsync(c => c.Code == currency.Code))
         {
             throw new InvalidOperationException($"Валюта с кодом {currency.Code} уже существует.");
         }
         _dbContext.Currencies.Add(currency);
-        _dbContext.SaveChanges();
+        await _dbContext.SaveChangesAsync();
     }
 
-    public void Delete(string currencyCode)
+    public async Task DeleteAsync(string currencyCode)
     {
-        var currency = _dbContext.Currencies.FirstOrDefault(c => c.Code == currencyCode);
+        var currency = await _dbContext.Currencies.FirstOrDefaultAsync(c => c.Code == currencyCode);
         if (currency == null) return;
         _dbContext.Currencies.Remove(currency);
-        _dbContext.SaveChanges();
+        await _dbContext.SaveChangesAsync();
     }
 }

@@ -8,7 +8,7 @@ namespace BankSystem.App.Tests;
 
 public class EquivalenceTests
 {
-    TestDataGenerator testDataGenerator = new ();
+    TestDataGenerator testDataGenerator = new();
     private ClientStorage _clientStorage;
     private ClientService _clientService;
     private CurrencyService _currencyService;
@@ -31,13 +31,16 @@ public class EquivalenceTests
         "Cashier", "Service Specialist", "Counselor", "Manager", "Bank Accountant", "Financial Analyst", "Auditor",
         "IT specialist"
     };
+
     Currency[] currencies =
     {
         new("USD", "Dollar USA", "$", 16.3m),
         new("EUR", "Euro", "€", 18.6m),
         new("RUP", "Russian ruble", "₽", 0.185m)
     };
+
     private const string _defaultCurrencyCode = "USD";
+
     [Fact]
     public void GetHashCodeNecessityPositiveTest()
     {
@@ -47,7 +50,7 @@ public class EquivalenceTests
             testDataGenerator.GenerateClientsBankDictionaryAccount(clientsBankList, currencies);
         var client = clientsBankDictionaryAccount.Keys.First();
         var newClient = new Client(client.Name, client.Surname, client.NumPassport, client.Phone,
-              client.DateBirthday);
+            client.DateBirthday);
         //Act
         Account result = clientsBankDictionaryAccount[newClient];
         //Assert
@@ -84,118 +87,133 @@ public class EquivalenceTests
     }
 
     [Fact]
-    public void AddClientPositiveListTest()
+    public async Task AddClientAsyncPositiveListTest()
     {
         //Arrange
-        var clientsBankList = testDataGenerator.GenerateClientsBankList(3);
+        var clientsBankList = testDataGenerator.GenerateClientsBankList(13);
         foreach (var client in clientsBankList)
         {
-            _clientService.AddClient(client, _defaultCurrencyCode);
+            await _clientService.AddClientAsync(client, _defaultCurrencyCode);
         }
+
         //Act
-        var clients = _clientStorage.GetCollection(new SearchRequest());
+        var clientOne = await _clientStorage.GetCollectionAsync(new SearchRequest{NumPassport = clientsBankList.First().NumPassport});
         //Assert
-        Assert.Equal(clients, clientsBankList);
+        Assert.Equal(clientsBankList.First(), clientOne.First());
     }
+
     [Fact]
-    public void DeleteClientPositiveListTest()
+    public async Task DeleteAllClientsAsyncPositiveListTest()
     {
         //Arrange
-        var clientsBankList = _clientService.FilterClients(new SearchRequest {});
+        var clientsBankList = await _clientService.FilterClientsAsync(new SearchRequest ());
         //Act
-        _clientService.DeleteClient(clientsBankList.First().Id);
+        foreach (var client in clientsBankList)
+        {
+            await _clientService.DeleteClientAsync(client.Id);
+        }
+        
         //Assert
-        Assert.Throws<ArgumentException>(() => _clientStorage.GetById(clientsBankList.First().Id));
+        var clientsBankListNow = await _clientService.FilterClientsAsync(new SearchRequest ());
+        Assert.Equal(0, clientsBankListNow.Count);
     }
+
     [Fact]
-    public void AddClientNegativeListTest()
+    public async Task AddClientAsyncNegativeListTest()
     {
         //Arrange
         var clientsBankList = testDataGenerator.GenerateClientsBankList(1);
         clientsBankList.First().Name = "";
         //Act
-        _clientService.AddClient(clientsBankList.First(), _defaultCurrencyCode);     
+        await _clientService.AddClientAsync(clientsBankList.First(), _defaultCurrencyCode);
         //Assert
-        Assert.Throws<Exception>(() => _clientService.AddClient(clientsBankList.First(), _defaultCurrencyCode));
-        
+        await Assert.ThrowsAsync<Exception>(async () =>
+            await _clientService.AddClientAsync(clientsBankList.First(), _defaultCurrencyCode));
+
     }
 
     [Fact]
-    public void AddAccountPositiveTest()
+    public async Task AddAccountAsyncPositiveTest()
     {
         //Arrange
         var clientsBankList = testDataGenerator.GenerateClientsBankList(1);
-        _clientService.AddClient(clientsBankList.First(),_defaultCurrencyCode);
-        _clientService.AddAccount(clientsBankList.First().Id, "USD");
+        await _clientService.AddClientAsync(clientsBankList.First(), _defaultCurrencyCode);
+        await _clientService.AddAccountAsync(clientsBankList.First().Id, "USD");
         //Act
-        var result = _clientService.GetClient(clientsBankList.First().Id).AccountsClient.Count;
+        var clients = await _clientService.GetClientAsync(clientsBankList.First().Id);
+        var result = clients.AccountsClient.Count;
         //Assert
         Assert.Equal(1, result);
     }
 
     [Fact]
-    public void UpdateClientPositiveTest()
+    public async Task UpdateClientAsyncPositiveTest()
     {
         //Arrange
         var clientsBankList = testDataGenerator.GenerateClientsBankList(1);
-        _clientService.AddClient(clientsBankList.First(),_defaultCurrencyCode);
-        var newClient = new Client(clientsBankList.First().Id);
-        newClient.Name = "Pavlik";
-        newClient.Surname = "Balan";
-        newClient.Phone = "+37368523915";
-        _clientService.UpdateClient(clientsBankList.First().Id, newClient);
+        await _clientService.AddClientAsync(clientsBankList.First(), _defaultCurrencyCode);
+        var newClient = new Client(clientsBankList.First().Id)
+        {
+            Name = "Pavlik",
+            Surname = "Balan",
+            Phone = "+37368523915",
+            NumPassport = "545464546"
+        };
+        await _clientService.UpdateClientAsync(clientsBankList.First().Id, newClient);
         //Act
-        var result = _clientService.GetClient(clientsBankList.First().Id);
+        var result = await _clientService.GetClientAsync(clientsBankList.First().Id);
         //Assert
         Assert.Equal(result, newClient);
     }
 
     [Fact]
-    public void FilterClientPositiveTest()
+    public async Task FilterClientAsyncPositiveTest()
     {
         //Arrange
         var clientsBankList = testDataGenerator.GenerateClientsBankList(1);
-        _clientService.AddClient(clientsBankList.First(), _defaultCurrencyCode);
+        await _clientService.AddClientAsync(clientsBankList.First(), _defaultCurrencyCode);
         var searchRequest = new SearchRequest { NumPassport = clientsBankList[0].NumPassport };
         //Act
-        var filteredClients =  _clientService.FilterClients(searchRequest);
+        var filteredClients = await _clientService.FilterClientsAsync(searchRequest);
         // Assert
         Assert.Single(filteredClients);
-        Assert.Equal(clientsBankList[0].NumPassport, filteredClients.First().NumPassport); 
+        Assert.Equal(clientsBankList[0].NumPassport, filteredClients.First().NumPassport);
     }
 
     [Fact]
-    public void AddEmployeePositiveListTest()
+    public async Task AddEmployeeAsyncPositiveListTest()
     {
         //Arrange
         var employeesBankList = testDataGenerator.GenerateEmployeesBankList(3, positions);
-        _employeeService.AddEmployees(employeesBankList);
+        await _employeeService.AddEmployeesAsync(employeesBankList);
         //Act
-        var employee = _employeeStorage.GetCollection(new SearchRequest());
+        var employee = await _employeeStorage.GetCollectionAsync(new SearchRequest());
         //Assert
         Assert.Equal(employee, employeesBankList);
     }
 
     [Fact]
-    public void FilterEmployeePositiveTest()
+    public async Task FilterEmployeeAsyncPositiveTest()
     {
         //Arrange
         var employeesBankList = testDataGenerator.GenerateEmployeesBankList(10, positions);
-        _employeeService.AddEmployees(employeesBankList);
+        await _employeeService.AddEmployeesAsync(employeesBankList);
         var searchRequest = new SearchRequest { Name = employeesBankList[0].Name };
         //Act
-        var filteredEmployees = _employeeService.FilterEmployees(searchRequest);
+        var filteredEmployees = await _employeeService.FilterEmployeesAsync(searchRequest);
         //Assert
         Assert.Equal(employeesBankList[0].NumPassport, filteredEmployees.First().NumPassport);
     }
+
     [Fact]
-    public void DeleteEmployeePositiveListTest()
+    public async Task DeleteEmployeeAsyncPositiveListTest()
     {
         //Arrange
-        var employeesBankList = _employeeService.FilterEmployees(new SearchRequest {});
+        var employeesBankList = await _employeeService.FilterEmployeesAsync(new SearchRequest { });
         //Act
-        _employeeService.DeleteEmployee(employeesBankList.First().Id);
+        await _employeeService.DeleteEmployeeAsync(employeesBankList.First().Id);
         //Assert
-        Assert.Throws<ArgumentException>(() => _employeeStorage.GetById(employeesBankList.First().Id));
+        await Assert.ThrowsAsync<ArgumentException>(async () =>
+            await _employeeStorage.GetByIdAsync(employeesBankList.First().Id));
     }
 }
