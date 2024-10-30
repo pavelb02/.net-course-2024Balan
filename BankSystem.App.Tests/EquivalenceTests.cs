@@ -185,8 +185,8 @@ public class EquivalenceTests
     {
         //Arrange & Act
         var pageSize = 5;
-        var iterationCount = 2;
-        var withdrawalAmount = 100;
+        var iterationCount = 3;
+        var withdrawalAmount = 10;
         var currencyCode = "USD";
 
         var currencyId = await _currencyService.GetCurrencyAsync(currencyCode);
@@ -223,7 +223,7 @@ public class EquivalenceTests
         // Assert
         var clientAfter = await _clientService.FilterClientsAsync(new SearchRequest { PageNumber = 1, PageSize = 1 });
         var amountAfter = clientAfter.First().AccountsClient.FirstOrDefault(a => a.CurrencyId == currencyId);
-        Assert.Equal(amountBefore - withdrawalAmount - withdrawalAmount, amountAfter.Amount);
+        Assert.Equal(amountBefore - iterationCount * withdrawalAmount, amountAfter.Amount);
     }
 
     [Fact]
