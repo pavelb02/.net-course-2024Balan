@@ -15,30 +15,30 @@ public class ClientService
         _currencyService = currencyService;
     }
 
-    public Client GetClient(Guid clientId)
+    public async Task<Client> GetClientAsync(Guid clientId)
     {
-        return _clientStorage.GetById(clientId);
+        return await _clientStorage.GetByIdAsync(clientId);
     }
     
-    public void DeleteClient(Guid clientId)
+    public async Task DeleteClientAsync(Guid clientId)
     {
-        _clientStorage.Delete(clientId);
+        await _clientStorage.DeleteAsync(clientId);
     }
     
-    public void DeleteAccount(Guid accountId)
+    public async Task DeleteAccountAsync(Guid accountId)
     {
-        _clientStorage.DeleteAccount(accountId);
+        await _clientStorage.DeleteAccountAsync(accountId);
     }
 
-    public void AddClient(Client client, string currencyCode)
+    public async Task AddClientAsync(Client client, string currencyCode)
     {
         try
         {
-            if (!ValidateAddClient(client)) return;
-            var currencyId = _currencyService.GetGurrency(currencyCode);
+            if (! await ValidateAddClientAsync(client)) return;
+            var currencyId = await _currencyService.GetCurrencyAsync(currencyCode);
             var account = new Account(client.Id, currencyId);
             client.AccountsClient.Add(account);
-            _clientStorage.Add(client);
+            await _clientStorage.AddAsync(client);
         }
         catch (ArgumentException ex)
         {
@@ -51,14 +51,14 @@ public class ClientService
         }
     }
 
-    public void AddAccount(Guid clientId, string currencyCode)
+    public async Task AddAccountAsync(Guid clientId, string currencyCode)
     {
         try
         {
-            var client = _clientStorage.GetById(clientId);
-            var currencyId = _currencyService.GetGurrency(currencyCode);
+            var client = await _clientStorage.GetByIdAsync(clientId);
+            var currencyId = await _currencyService.GetCurrencyAsync(currencyCode);
             var account = new Account(client.Id, currencyId);
-            _clientStorage.AddAccount(clientId, account);
+            await _clientStorage.AddAccountAsync(clientId, account);
         }
         catch (ArgumentException ex)
         {
@@ -71,20 +71,21 @@ public class ClientService
         }
     }
 
-    public void UpdateClient(Guid clientId, Client newClient)
+    public async Task UpdateClientAsync(Guid clientId, Client newClient)
     {
         try
         {
-            if (ValidateAddClient(newClient))
+            if (await ValidateAddClientAsync(newClient))
             {
-                var accounts = _clientStorage.GetById(clientId).AccountsClient;
-                var currencyId = _currencyService.GetGurrency("EUR");
+                var client = await _clientStorage.GetByIdAsync(clientId);
+                var accounts = client.AccountsClient;
+                var currencyId = await _currencyService.GetCurrencyAsync("EUR");
                 accounts.Add(new Account(clientId, currencyId));
                 foreach (var account in accounts)
                 {
                     newClient.AccountsClient.Add(account);
                 }
-                _clientStorage.Update(clientId, newClient);
+                await _clientStorage.UpdateAsync(clientId, newClient);
             }
         }
         catch (ArgumentException ex)
@@ -98,13 +99,35 @@ public class ClientService
         }
     }
 
-    public List<Client> FilterClients(SearchRequest searchRequest)
+    public async Task<List<Client>> FilterClientsAsync(SearchRequest searchRequest)
     {
-        var filteredClients = _clientStorage.GetCollection(searchRequest);
+        var filteredClients = await _clientStorage.GetCollectionAsync(searchRequest);
         return filteredClients;
     }
 
-    private static bool ValidateAddClient(Client client)
+    public async Task<bool> Debit(WithdrawalRequest withdrawalRequest)
+    {
+        var client = await _clientStorage.GetByIdAsync(withdrawalRequest.ClientId);
+        var currencyId = await _currencyService.GetCurrencyAsync(withdrawalRequest.CurrencyCode);
+        var account = client.AccountsClient.FirstOrDefault(a => a.CurrencyId == currencyId);
+        if (account == null)
+        {
+            Console.WriteLine($"Аккаунт клиента с валютой {withdrawalRequest.CurrencyCode} не найден.");
+            return false;
+        }
+
+        if (account.Amount < withdrawalRequest.WithdrawalAmount)
+        {
+            Console.WriteLine("Недостаточно средств на счете.");
+            return false;
+        }
+        account.Amount -= withdrawalRequest.WithdrawalAmount;
+        
+        await _clientStorage.UpdateAsync(client.Id, client);
+        return true;
+    }
+
+    private static Task<bool> ValidateAddClientAsync(Client client)
     {
         if (string.IsNullOrWhiteSpace(client.Name))
         {
@@ -136,6 +159,6 @@ public class ClientService
             throw new ArgumentOutOfRangeException(nameof(age), "Возраст должен быть положительным.");
         }
 
-        return true;
+        return Task.FromResult(true);
     }
 }

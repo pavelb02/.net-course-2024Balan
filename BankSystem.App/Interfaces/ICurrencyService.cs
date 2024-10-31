@@ -4,7 +4,7 @@ namespace BankSystem.App.Interfaces;
 
 public interface ICurrencyService
 {
-    public Guid GetGurrency(string currencyCode);
-    public void AddGurrency(string code, string name, string symbol, decimal exchangeRate);
-    public void DeleteGurrency(string currencyCode);
+    public Task<Guid> GetCurrencyAsync(string currencyCode);
+    public Task AddCurrencyAsync(string code, string name, string symbol, decimal exchangeRate);
+    public Task DeleteGurrencyAsync(string currencyCode);
 }

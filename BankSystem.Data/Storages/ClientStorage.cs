@@ -2,6 +2,7 @@
 using BankSystem.App.Interfaces;
 using BankSystem.App.Services;
 using BankSystem.Domain.Models;
+using Microsoft.EntityFrameworkCore;
 
 namespace BankSystem.Data.Storages;
 
@@ -14,26 +15,26 @@ public class ClientStorage : IClientStorage
         _dbContext = new BankSystemDbContext();
     }
 
-    public void Add(Client client)
+    public async Task AddAsync(Client client)
     {
-        if (_dbContext.Clients.Any(c => c.Id == client.Id))
+        if (await _dbContext.Clients.AnyAsync(c => c.Id == client.Id))
         {
             throw new InvalidOperationException($"Клиент с ID {client.Id} уже существует.");
         }
-        _dbContext.Clients.Add(client);
-        _dbContext.SaveChanges();
+        await _dbContext.Clients.AddAsync(client);
+        await _dbContext.SaveChangesAsync();
     }
 
-    public Client GetById(Guid clientId)
+    public async Task<Client> GetByIdAsync(Guid clientId)
     {
-        var client = _dbContext.Clients.FirstOrDefault(c => c.Id == clientId);
+        var client = await _dbContext.Clients.FirstOrDefaultAsync(c => c.Id == clientId);
         if (client == null) throw new ArgumentException($"Клиент с Id {clientId} не найден.");
         return client;
     }
 
-    public List<Client> GetCollection(SearchRequest searchRequest)
+    public async Task<List<Client>> GetCollectionAsync(SearchRequest searchRequest)
     {
-        IQueryable<Client> request = _dbContext.Clients;
+        IQueryable<Client> request = _dbContext.Clients.Include(c => c.AccountsClient);
         if (!string.IsNullOrWhiteSpace(searchRequest.Name))
         {
             request = request.Where(c => c.Name == searchRequest.Name);
@@ -64,20 +65,19 @@ public class ClientStorage : IClientStorage
         //var countRecords = request.Count();
         if (searchRequest.PageSize != 0 && searchRequest.PageNumber != 0)
         {
-            var clients = request
+            return await request
                 .OrderBy(c => c.Surname).ThenBy(c => c.Name)
                 .Skip((searchRequest.PageNumber - 1) * searchRequest.PageSize)
                 .Take(searchRequest.PageSize)
-                .ToList();
-            return clients;
+                .ToListAsync();
         }
 
-        return request.ToList();
+        return await request.ToListAsync();
     }
 
-    public void Update(Guid clientId, Client client)
-    {
-        var updateClient = _dbContext.Clients.FirstOrDefault(c => c.Id == clientId);
+    public async Task UpdateAsync(Guid clientId, Client client)
+    {/*
+        var updateClient = await _dbContext.Clients.FirstOrDefaultAsync(c => c.Id == clientId);
         if (updateClient == null) return;
 
         updateClient.Name = client.Name;
@@ -107,32 +107,33 @@ public class ClientStorage : IClientStorage
                 account.ClientId = updateClient.Id;
             }
         }
-        _dbContext.SaveChanges();
+        await _dbContext.SaveChangesAsync();*/
+        _dbContext.Entry(client).State = EntityState.Modified;
+        await _dbContext.SaveChangesAsync();
     }
 
-    public void Delete(Guid clientId)
+    public async Task DeleteAsync(Guid clientId)
     {
-        var client = _dbContext.Clients.FirstOrDefault(c => c.Id == clientId);
+        var client = await _dbContext.Clients.FirstOrDefaultAsync(c => c.Id == clientId);
         if (client == null) return;
         _dbContext.Clients.Remove(client);
         
-        _dbContext.SaveChanges();
+        await _dbContext.SaveChangesAsync();
     }
-    public void AddAccount(Guid clientId, Account account)
+    public async Task AddAccountAsync(Guid clientId, Account account)
     {
-        var client = _dbContext.Clients.FirstOrDefault(c => c.Id == clientId);
-        
+        var client = await _dbContext.Clients.FirstOrDefaultAsync(c => c.Id == clientId);
         client.AccountsClient.Add(account);
-        _dbContext.SaveChanges();
+        await _dbContext.SaveChangesAsync();
     }
 
-    public void DeleteAccount(Guid accountId)
+    public async Task DeleteAccountAsync(Guid accountId)
     {
-        var account = _dbContext.Accounts.FirstOrDefault(a => a.Id == accountId);
+        var account = await _dbContext.Accounts.FirstOrDefaultAsync(a => a.Id == accountId);
         if (account != null)
         {
             _dbContext.Accounts.Remove(account);
-            _dbContext.SaveChanges();
+            await _dbContext.SaveChangesAsync();
         }
         else
         {
@@ -140,18 +141,20 @@ public class ClientStorage : IClientStorage
         }
     }
 
-    public Client? SearchYoungClient()
+    public async Task<Client?> SearchYoungClientAsync()
     {
-        return _dbContext.Clients.MinBy(c => c.DateBirthday);
+        return await _dbContext.Clients.OrderBy(c => c.DateBirthday).FirstOrDefaultAsync();
     }
-    public Client? SearchOldClient()
+
+    public async Task<Client?> SearchOldClientAsync()
     {
-        return _dbContext.Clients.MaxBy(c => c.DateBirthday);
+        return await _dbContext.Clients.OrderByDescending(c => c.DateBirthday).FirstOrDefaultAsync();
     }
-    public int SearchAverageAgeClient()
+
+    public async Task<int> SearchAverageAgeClientAsync()
     {
         var dateNow = DateTime.Now;
-        return (int)_dbContext.Clients.Average(c => dateNow.Year - c.DateBirthday.Year -
-                                                    (dateNow.DayOfYear < c.DateBirthday.DayOfYear ? 1 : 0));
+        return (int) await _dbContext.Clients.AverageAsync(c => dateNow.Year - c.DateBirthday.Year -
+                                                                (dateNow.DayOfYear < c.DateBirthday.DayOfYear ? 1 : 0));
     }
 }

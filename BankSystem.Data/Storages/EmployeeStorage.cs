@@ -2,6 +2,8 @@
 using BankSystem.App.Interfaces;
 using BankSystem.App.Services;
 using BankSystem.Domain.Models;
+using Microsoft.EntityFrameworkCore;
+
 
 namespace BankSystem.Data.Storages;
 
@@ -14,27 +16,27 @@ public class EmployeeStorage : IStorage<Employee, SearchRequest>
         _dbContext = new BankSystemDbContext();
     }
     
-    public void Add(Employee employee)
+    public async Task AddAsync(Employee employee)
     {
-        if (_dbContext.Employees.Any(e => e.Id == employee.Id))
+        if (await _dbContext.Employees.AnyAsync(e => e.Id == employee.Id))
         {
             throw new InvalidOperationException($"Сотрудник с ID {employee.Id} уже существует.");
         }
 
-        _dbContext.Employees.Add(employee);
-        _dbContext.SaveChanges();
+        await _dbContext.Employees.AddAsync(employee);
+        await _dbContext.SaveChangesAsync();
     }
 
-    public Employee GetById(Guid employeeId)
+    public async Task<Employee> GetByIdAsync(Guid employeeId)
     {
-        var employee = _dbContext.Employees.FirstOrDefault(e => e.Id == employeeId);
+        var employee = await _dbContext.Employees.FirstOrDefaultAsync(e => e.Id == employeeId);
         if (employee == null) throw new ArgumentException($"Сотрудник с Id {employeeId} не найден.");
         return employee;
     }
 
-    public List<Employee> GetCollection(SearchRequest searchRequest)
+    public async Task<List<Employee>> GetCollectionAsync(SearchRequest searchRequest)
     {
-        IQueryable<Employee> request = _dbContext.Employees;
+        IQueryable<Employee> request =  _dbContext.Employees;
         if (!string.IsNullOrWhiteSpace(searchRequest.Name))
         {
             request = request.Where(e => e.Name == searchRequest.Name);
@@ -64,55 +66,43 @@ public class EmployeeStorage : IStorage<Employee, SearchRequest>
         //var countRecords = request.Count();
         if (searchRequest.PageSize != 0 && searchRequest.PageNumber != 0)
         {
-            var employees = request
+            return await request
                 .OrderBy(c => c.Surname).ThenBy(c => c.Name)
                 .Skip((searchRequest.PageNumber - 1) * searchRequest.PageSize)
                 .Take(searchRequest.PageSize)
-                .ToList();
-            return employees;
+                .ToListAsync();
         }
 
-        return request.ToList();
+        return await request.ToListAsync();
     }
 
-    public void Update(Guid employeeId, Employee employee)
+    public async Task UpdateAsync(Guid employeeId, Employee employee)
     {
-        var updateEmployee = _dbContext.Employees.FirstOrDefault(e => e.Id == employeeId);
-
-        if (updateEmployee == null) return;
-        
-        updateEmployee.Name = employee.Name;
-        updateEmployee.Surname = employee.Surname;
-        updateEmployee.Phone = employee.Phone;
-        updateEmployee.NumPassport = employee.NumPassport;
-        updateEmployee.DateBirthday = employee.DateBirthday;
-        updateEmployee.Position = employee.Position;
-        updateEmployee.Salary = employee.Salary;
-        
-        _dbContext.SaveChanges();
+        _dbContext.Update(employee);
+        await _dbContext.SaveChangesAsync();
     }
 
-    public void Delete(Guid employeeId)
+    public async Task DeleteAsync(Guid employeeId)
     {
-        var employee = _dbContext.Employees.FirstOrDefault(e => e.Id == employeeId);
+        var employee = await _dbContext.Employees.FirstOrDefaultAsync(e => e.Id == employeeId);
         if (employee == null) return;
         _dbContext.Employees.Remove(employee);
         
-        _dbContext.SaveChanges();
+        await _dbContext.SaveChangesAsync();
     }
     
-    public Employee? SearchYoungEmployee()
+    public async Task<Employee?> SearchYoungEmployee()
     {
-        return _dbContext.Employees.MinBy(c => c.DateBirthday);
+        return await _dbContext.Employees.OrderBy(e => e.DateBirthday).FirstOrDefaultAsync();
     }
-    public Employee? SearchOldEmployee()
+    public async Task<Employee?> SearchOldEmployee()
     {
-        return _dbContext.Employees.MaxBy(c => c.DateBirthday);
+        return await _dbContext.Employees.OrderByDescending(e => e.DateBirthday).FirstOrDefaultAsync();
     }
-    public int SearchAverageAgeEmployee()
+    public async Task<int> SearchAverageAgeEmployee()
     {
         var dateNow = DateTime.Now;
-        return (int)_dbContext.Employees.Average(e => dateNow.Year - e.DateBirthday.Year -
-                                                    (dateNow.DayOfYear < e.DateBirthday.DayOfYear ? 1 : 0));
+        return (int) await _dbContext.Employees.AverageAsync(e => dateNow.Year - e.DateBirthday.Year -
+                                                                  (dateNow.DayOfYear < e.DateBirthday.DayOfYear ? 1 : 0));
     }
 }

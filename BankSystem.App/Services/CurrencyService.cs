@@ -12,18 +12,18 @@ public class CurrencyService : ICurrencyService
     {
         _currencyStorage = currencyStorage;
     }
-    public Guid GetGurrency(string currencyCode)
+    public async Task<Guid> GetCurrencyAsync(string currencyCode)
     {
-        return _currencyStorage.Get(currencyCode);
+        return await _currencyStorage.GetAsync(currencyCode);
     }
 
-    public void AddGurrency(string code, string name, string symbol, decimal exchangeRate)
+    public async Task AddCurrencyAsync(string code, string name, string symbol, decimal exchangeRate)
     {
         try
         {
             var currency = new Currency(code, name, symbol, exchangeRate);
-            if (ValidateCurrency(currency))
-                _currencyStorage.Add(currency);
+            if (await ValidateCurrencyAsync(currency))
+                await _currencyStorage.AddAsync(currency);
         }
         catch (Exception ex)
         {
@@ -32,11 +32,11 @@ public class CurrencyService : ICurrencyService
         }
     }
 
-    public void DeleteGurrency(string currencyCode)
+    public async Task DeleteGurrencyAsync(string currencyCode)
     {
-        _currencyStorage.Delete(currencyCode);
+        await _currencyStorage.DeleteAsync(currencyCode);
     }
-    private static bool ValidateCurrency(Currency currency)
+    private static Task<bool> ValidateCurrencyAsync(Currency currency)
     {
         if (string.IsNullOrWhiteSpace(currency.Code) || string.IsNullOrWhiteSpace(currency.Name) || string.IsNullOrWhiteSpace(currency.Symbol))
         {
@@ -48,6 +48,6 @@ public class CurrencyService : ICurrencyService
             throw new ArgumentOutOfRangeException(nameof(currency.ExchangeRate), "Стоимость валюты не может быть не положительной.");
         }
         
-        return true;
+        return Task.FromResult(true);
     }
 }
