@@ -1,3 +1,4 @@
+using BankSystem.App.Dto;
 using BankSystem.App.Exeptions;
 using BankSystem.Domain.Models;
 using Bogus;
@@ -8,9 +9,9 @@ namespace BankSystem.App.Services;
 
 public class TestDataGenerator
 {
-    public List<Client> GenerateClientsBankList(int count)
+    public List<ClientDto> GenerateClientsBankList(int count)
     {
-        Faker<Client> faker = new Faker<Client>("en")
+        Faker<ClientDto> faker = new Faker<ClientDto>("en")
             .RuleFor(x => x.Id, (faker, _) => faker.Random.Guid())
             .RuleFor(x => x.Name, (faker, _) => faker.Person.FirstName)
             .RuleFor(x => x.Surname, (faker, _) => faker.Person.LastName)
@@ -21,20 +22,20 @@ public class TestDataGenerator
 
         return faker.Generate(count);
     }
-    
-    public Dictionary<string, Client> GenerateClientsBankDictionary(List<Client> clientsList)
+
+    public Dictionary<string, ClientDto> GenerateClientsBankDictionary(List<ClientDto> clientsList)
     {
         var clientsDictionary = clientsList.ToDictionary(client => client.Phone);
         return clientsDictionary;
     }
-    public Dictionary<Client, Account> GenerateClientsBankDictionaryAccount(List<Client> clientsList, Currency[] currencies)
+    public Dictionary<ClientDto, Account> GenerateClientsBankDictionaryAccount(List<ClientDto> clientsList, Currency[] currencies)
     {
         var faker = new Faker<Account>("en")
             .RuleFor(x => x.Id, (faker, _) => faker.Random.Guid())
             .RuleFor(x => x.Amount, faker => faker.Finance.Amount(100, 10000))
             .RuleFor(x => x.Currency,faker => faker.PickRandom(currencies));
         var accounts = faker.Generate(clientsList.Count).ToArray();
-        var clientsDictionaryAccount = new Dictionary<Client, Account>();
+        var clientsDictionaryAccount = new Dictionary<ClientDto, Account>();
         for (var i = 0; i < clientsList.Count; i++)
         {
             clientsDictionaryAccount.Add(clientsList[i], accounts[i]);
@@ -65,10 +66,10 @@ public class TestDataGenerator
             .RuleFor(x => x.Currency,_  => selectedCurrency);
         return faker.Generate(count).ToArray();
     }
-    public Dictionary<Client, Account[]> GenerateClientsBankDictionaryMultiAccount(List<Client> clientsList)
+    public Dictionary<ClientDto, Account[]> GenerateClientsBankDictionaryMultiAccount(List<ClientDto> clientsList)
     {
         var accounts = GenerateAccountsArray(1, "USD");
-        var clientsDictionaryMultiAccount = new Dictionary<Client, Account[]>();
+        var clientsDictionaryMultiAccount = new Dictionary<ClientDto, Account[]>();
         for (var i = 0; i < clientsList.Count; i++)
         {
             clientsDictionaryMultiAccount.Add(clientsList[i], accounts);

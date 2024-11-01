@@ -16,10 +16,9 @@ public class BankSystemDbContext : DbContext
         Database.EnsureCreated();
     }
 
-    protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
+    protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder) 
     {
-        optionsBuilder.UseNpgsql(
-            "Host=localhost; Port=5432; Database=BankSystem; Username=postgres; Password=postgres");
+        optionsBuilder.UseNpgsql("Host=localhost; Port=5432; Database=BankSystem; Username=postgres; Password=postgres");
     }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)

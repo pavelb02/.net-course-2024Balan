@@ -1,5 +1,4 @@
-﻿using BankSystem.App.Exeptions;
-using BankSystem.App.Interfaces;
+﻿using BankSystem.App.Interfaces;
 using BankSystem.App.Services;
 using BankSystem.Domain.Models;
 using Microsoft.EntityFrameworkCore;
@@ -76,7 +75,7 @@ public class EmployeeStorage : IStorage<Employee, SearchRequest>
         return await request.ToListAsync();
     }
 
-    public async Task UpdateAsync(Guid employeeId, Employee employee)
+    public async Task UpdateAsync(Employee employee)
     {
         _dbContext.Update(employee);
         await _dbContext.SaveChangesAsync();

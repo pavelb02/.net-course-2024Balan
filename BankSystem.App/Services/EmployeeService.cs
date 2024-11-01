@@ -39,13 +39,13 @@ public class EmployeeService
         }
     }
 
-    public async Task UpdateEmployeeAsync(Guid employeeId, Employee newEmployee)
+    public async Task UpdateEmployeeAsync(Employee newEmployee)
     {
         try
         {
             if (await ValidateAddEmployee(newEmployee))
             {
-                await _employeeStorage.UpdateAsync(employeeId, newEmployee);
+                await _employeeStorage.UpdateAsync(newEmployee);
             }
         }
         catch (ArgumentException ex)

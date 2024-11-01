@@ -8,6 +8,6 @@ public interface IStorage<T, K>
     public Task AddAsync(T item);
     public Task<T> GetByIdAsync(Guid itemId);
     public Task<List<T>> GetCollectionAsync(K searchRequest);
-    public Task UpdateAsync(Guid itemId, T item);
+    public Task UpdateAsync(T item);
     public Task DeleteAsync(Guid itemId);
 }

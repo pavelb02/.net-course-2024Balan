@@ -1,4 +1,7 @@
-﻿using BankSystem.App.Services;
+﻿using AutoMapper;
+using BankSystem.App.Dto;
+using BankSystem.App.Mapping;
+using BankSystem.App.Services;
 using BankSystem.Data.Storages;
 using BankSystem.Domain.Models;
 
@@ -8,22 +11,29 @@ public class ExportServiceTests
 {
     private EmployeeService _employeeService;
     private ClientService _clientService;
+    private IMapper _mapper;
 
     public ExportServiceTests()
     {
+        var mapperConfig = new MapperConfiguration(cfg =>
+        {
+            cfg.AddProfile<ClientProfile>(); 
+        });
+    
+        _mapper = mapperConfig.CreateMapper();
         var employeeStorage = new EmployeeStorage();
         _employeeService = new EmployeeService(employeeStorage);
         var currencyStorage = new CurrencyStorage();
         var currencyService = new CurrencyService(currencyStorage);
         var clientStorage = new ClientStorage();
-        _clientService = new ClientService(clientStorage, currencyService);
+        _clientService = new ClientService(clientStorage, currencyService, _mapper);
     }
     
     [Fact]
     public async Task WriteClientsToCsvAndReadFromDbTest()
     {
         //Arrange
-        List<Client> clientsFromDb = new (await _clientService.FilterClientsAsync(new SearchRequest()));
+        List<Client> clientsFromDb = new (_mapper.Map<List<Client>>(await _clientService.FilterClientsAsync(new SearchRequest())));
         string pathToDirectory = Path.Combine("D:", "Программирование","Dex backend 2024", "Practice",".net-course-2024Balan", "Tool");
         string fileName = "clientsCsv.csv";
         ExportService<Client> exportService = new ExportService<Client>(pathToDirectory, fileName);
@@ -44,16 +54,17 @@ public class ExportServiceTests
         string fileName = "clientsCsv.csv";
         ExportService<Client> exportService = new ExportService<Client>(pathToDirectory, fileName);
         List<Client> clientsFromFile = exportService.ReadItemsFromCsv();
+        var clientsFromFileDto = _mapper.Map<List<ClientDto>>(clientsFromFile);
         
         //Act
-        foreach (var client in clientsFromFile)
+        foreach (var client in clientsFromFileDto)
         {
             await _clientService.AddClientAsync(client, "USD");
         }
         List<Client> clientsFromDb = new List<Client>();
         foreach (var client in clientsFromFile)
         {
-            clientsFromDb.Add(await _clientService.GetClientAsync(client.Id));
+            clientsFromDb.Add(_mapper.Map<Client>(await _clientService.GetClientAsync(client.Id)));
         }
 
         //Assert
@@ -64,7 +75,8 @@ public class ExportServiceTests
     public async Task WriteClientsToJsonAndReadClientsFromJsonTest()
     {
         //Arrange
-        List<Client> clientsFromDb = new (await _clientService.FilterClientsAsync(new SearchRequest()));
+        List<ClientDto> clientsFromDbDto = new (await _clientService.FilterClientsAsync(new SearchRequest()));
+        var clientsFromDb = _mapper.Map<List<Client>>(clientsFromDbDto);
         var pathToDirectory = Path.Combine("D:", "Программирование", "Dex backend 2024", "Practice", ".net-course-2024Balan", "Tool");
         var fileName = "clientsJson.json";
         var fullPath = Path.Combine(pathToDirectory, fileName);
@@ -82,7 +94,8 @@ public class ExportServiceTests
     public async Task WriteClientToJsonAndReadClientFromJsonTest()
     {
         //Arrange
-        List<Client> clientsFromDb = new (await _clientService.FilterClientsAsync(new SearchRequest()));
+        List<ClientDto> clientsFromDbDto = new (await _clientService.FilterClientsAsync(new SearchRequest()));
+        var clientsFromDb = _mapper.Map<List<Client>>(clientsFromDbDto);
         var pathToDirectory = Path.Combine("D:", "Программирование", "Dex backend 2024", "Practice", ".net-course-2024Balan", "Tool");
         var fileName = "clientJson.json";
         var fullPath = Path.Combine(pathToDirectory, fileName);

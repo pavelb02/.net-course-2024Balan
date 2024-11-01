@@ -38,7 +38,7 @@ public class RateUpdater
                         account.Amount += account.Amount * interest;
                     }
 
-                    await _clientStorage.UpdateAsync(client.Id, client);
+                    await _clientStorage.UpdateAsync(client);
                 }
 
                 pageNumber++;

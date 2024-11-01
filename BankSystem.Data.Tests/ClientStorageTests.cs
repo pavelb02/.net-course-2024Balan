@@ -1,3 +1,5 @@
+using AutoMapper;
+using BankSystem.App.Mapping;
 using BankSystem.App.Services;
 using BankSystem.Data.Storages;
 using BankSystem.Domain.Models;
@@ -6,15 +8,29 @@ namespace BankSystem.Data.Tests;
 
 public class ClientStorageTests
 {
-    ClientStorage _clientStorage = new ClientStorage();
-    TestDataGenerator _testDataGenerator = new TestDataGenerator();
+    TestDataGenerator _testDataGenerator = new();
+    private ClientStorage _clientStorage;
+   
+    private IMapper _mapper;
+
+    public ClientStorageTests()
+    {
+        var mapperConfig = new MapperConfiguration(cfg =>
+        {
+            cfg.AddProfile<ClientProfile>(); 
+        });
+    
+        _mapper = mapperConfig.CreateMapper();
+        _clientStorage = new ClientStorage();
+    }
     [Fact]
     public async Task AddClientAsyncPositiveTest()
     {
         //Arrange
         var clientsBankList = _testDataGenerator.GenerateClientsBankList(1);
+        var client = _mapper.Map<Client>(clientsBankList.First());
         //Act
-        await _clientStorage.AddAsync(clientsBankList.First());
+        await _clientStorage.AddAsync(client);
         //Assert
         var addedClient = _clientStorage.GetByIdAsync(clientsBankList.First().Id);
         Assert.NotNull(addedClient);
@@ -26,7 +42,7 @@ public class ClientStorageTests
         var clientsBankList = _testDataGenerator.GenerateClientsBankList(10);
         foreach (var client in clientsBankList)
         {
-            await _clientStorage.AddAsync(client);
+            await _clientStorage.AddAsync(_mapper.Map<Client>(client));
         }
         
         var youngClient = clientsBankList.MinBy(c => c.DateBirthday);
@@ -42,7 +58,7 @@ public class ClientStorageTests
         var clientsBankList = _testDataGenerator.GenerateClientsBankList(10);
         foreach (var client in clientsBankList)
         {
-            _clientStorage.AddAsync(client);
+            _clientStorage.AddAsync(_mapper.Map<Client>(client));
         }
         
         var oldClient = clientsBankList.MaxBy(c => c.DateBirthday);
@@ -58,7 +74,7 @@ public class ClientStorageTests
         var clientsBankList = _testDataGenerator.GenerateClientsBankList(10);
         foreach (var client in clientsBankList)
         {
-            await _clientStorage.AddAsync(client);
+            await _clientStorage.AddAsync(_mapper.Map<Client>(client));
         }
         var dateNow = DateTime.Now;
         var averageAge = (int)clientsBankList.Average(c => dateNow.Year - c.DateBirthday.Year -

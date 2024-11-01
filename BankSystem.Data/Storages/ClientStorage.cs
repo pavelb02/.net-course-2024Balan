@@ -1,4 +1,5 @@
-﻿using BankSystem.App.Exeptions;
+﻿using BankSystem.App.Dto;
+using BankSystem.App.Exeptions;
 using BankSystem.App.Interfaces;
 using BankSystem.App.Services;
 using BankSystem.Domain.Models;
@@ -75,39 +76,8 @@ public class ClientStorage : IClientStorage
         return await request.ToListAsync();
     }
 
-    public async Task UpdateAsync(Guid clientId, Client client)
-    {/*
-        var updateClient = await _dbContext.Clients.FirstOrDefaultAsync(c => c.Id == clientId);
-        if (updateClient == null) return;
-
-        updateClient.Name = client.Name;
-        updateClient.Surname = client.Surname;
-        updateClient.NumPassport = client.NumPassport;
-        updateClient.Phone = client.Phone;
-        updateClient.DateBirthday = client.DateBirthday;
-
-        foreach (var oldAccount in updateClient.AccountsClient.ToList())
-        {
-            if (client.AccountsClient.All(a => a.Id != oldAccount.Id))
-            {
-                _dbContext.Accounts.Remove(oldAccount);
-            }
-        }
-        
-        foreach (var account in client.AccountsClient)
-        {
-            var existingAccount = updateClient.AccountsClient.FirstOrDefault(a => a.Id == account.Id);
-            if (existingAccount != null)
-            {
-                existingAccount.Amount = account.Amount;
-            }
-            else
-            {
-                updateClient.AccountsClient.Add(account);
-                account.ClientId = updateClient.Id;
-            }
-        }
-        await _dbContext.SaveChangesAsync();*/
+    public async Task UpdateAsync(Client client)
+    {
         _dbContext.Entry(client).State = EntityState.Modified;
         await _dbContext.SaveChangesAsync();
     }
