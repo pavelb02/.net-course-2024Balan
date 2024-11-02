@@ -24,7 +24,7 @@ public class EmployeeService : IEmployeeService
         return employeeDto;
     }
 
-    public async Task<Guid> AddEmployeesAsync(EmployeeDto employeeDto)
+    public async Task<Guid> AddEmployeeAsync(EmployeeDto employeeDto)
     {
         try
         {

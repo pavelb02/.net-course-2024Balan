@@ -251,7 +251,7 @@ public class EquivalenceTests
         var employeesBankListDto = _testDataGenerator.GenerateEmployeesBankList(3, positions);
         foreach (var employeeDto in employeesBankListDto)
         {
-            await _employeeService.AddEmployeesAsync(employeeDto);
+            await _employeeService.AddEmployeeAsync(employeeDto);
         }
         var employee = _mapper.Map<Employee>(employeesBankListDto.First());
         //Act
@@ -267,7 +267,7 @@ public class EquivalenceTests
         var employeesBankListDto = _testDataGenerator.GenerateEmployeesBankList(3, positions);
         foreach (var employeeDto in employeesBankListDto)
         {
-            await _employeeService.AddEmployeesAsync(employeeDto);
+            await _employeeService.AddEmployeeAsync(employeeDto);
         }
         var searchRequest = new SearchRequest { NumPassport = employeesBankListDto[0].NumPassport };
         //Act

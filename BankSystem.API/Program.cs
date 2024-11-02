@@ -26,6 +26,7 @@ builder.Services.AddScoped<IClientService, ClientService>();
 builder.Services.AddFluentValidation(config =>
 {
     config.RegisterValidatorsFromAssemblyContaining<ClientDtoValidator>();
+    config.RegisterValidatorsFromAssemblyContaining<EmployeeDtoValidator>();
 });
 
 var app = builder.Build();

@@ -30,12 +30,35 @@ public class EmployeeDtoValidator : AbstractValidator<EmployeeDto>
         
         RuleFor(c => c.DateBirthday)
             .NotEmpty()
-            .NotNull()
-            .WithMessage("Дата рождения сотрудника не может быть пустой.");
-
+            .WithMessage("Дата рождения сотрудника не может быть пустой.")
+            .Must(ValidateAge)
+            .WithMessage("Сотрудник должен быть старше 18 лет.")
+            .Must(ValidateDateBirthday)
+            .WithMessage("Дата рождения сотрудника должна меньше, чем нынешняя.");
+        
+        RuleFor(e => e.Salary)
+            .GreaterThan(0)
+            .WithMessage("Зарплата должна быть положительным числом.");
+        
+        RuleFor(e => e.StartDate)
+            .LessThanOrEqualTo(DateTime.UtcNow)
+            .WithMessage("Дата начала работы не может быть в будущем.");
+        
         RuleFor(c => c.Phone)
             .NotNull()
             .NotEmpty()
             .WithMessage("Номер телефона сотрудника не может быть пустым");
+    }
+    private bool ValidateAge(DateTime dateOfBirth)
+    {
+        var today = DateTime.Today;
+        var age = today.Year - dateOfBirth.Year;
+        if (dateOfBirth > today.AddYears(-age)) age--;
+        return age >= 18;
+    }
+
+    private bool ValidateDateBirthday(DateTime date)
+    {
+        return date <= DateTime.Today;
     }
 }

@@ -140,7 +140,7 @@ public class ExportServiceTests
         //Act
         foreach (var employeeDto in employeesFromFileDto)
         {
-            await _employeeService.AddEmployeesAsync(employeeDto);
+            await _employeeService.AddEmployeeAsync(employeeDto);
         }
         var employeesFromDbDto = new List<EmployeeDto>();
         foreach (var employee in employeesFromFile)
