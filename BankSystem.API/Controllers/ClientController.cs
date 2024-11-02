@@ -16,8 +16,8 @@ public class ClientController : ControllerBase
         _clientService = clientService;
     }
 
-    [HttpGet]
-    public async Task<IActionResult> GetClient([FromQuery] Guid clientId)
+    [HttpGet("{clientId}")]
+    public async Task<IActionResult> GetClient([FromRoute] Guid clientId)
     {
         var response = await _clientService.GetClientAsync(clientId);
         return Ok(response);
@@ -38,7 +38,7 @@ public class ClientController : ControllerBase
     }
     
     [HttpPut]
-    public async Task<IActionResult> UpdateClient([FromBody] Guid clientId, ClientDto clientDto)
+    public async Task<IActionResult> UpdateClient([FromRoute] Guid clientId, [FromBody] ClientDto clientDto)
     {
         var response = await _clientService.UpdateClientAsync(clientId ,clientDto);
         return Ok(response);

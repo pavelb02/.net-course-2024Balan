@@ -22,6 +22,7 @@ builder.Services.AddScoped<IStorage<Employee, SearchRequest>, EmployeeStorage>()
 builder.Services.AddScoped<ICurrencyStorage, CurrencyStorage>();
 builder.Services.AddScoped<ICurrencyService, CurrencyService>();
 builder.Services.AddScoped<IClientService, ClientService>();
+builder.Services.AddScoped<IEmployeeService, EmployeeService>();
 
 builder.Services.AddFluentValidation(config =>
 {

@@ -16,8 +16,8 @@ public class EmployeeController : ControllerBase
         _employeeService = employeeService;
     }
 
-    [HttpGet]
-    public async Task<IActionResult> GetEmployee([FromQuery] Guid employeeId)
+    [HttpGet("{employeeId}")]
+    public async Task<IActionResult> GetEmployee([FromRoute] Guid employeeId)
     {
         var response = await _employeeService.GetEmployeeAsync(employeeId);
         return Ok(response);
@@ -38,7 +38,7 @@ public class EmployeeController : ControllerBase
     }
     
     [HttpPut]
-    public async Task<IActionResult> UpdateEmployee([FromBody] Guid employeeId, EmployeeDto employeeDto)
+    public async Task<IActionResult> UpdateEmployee([FromRoute] Guid employeeId, [FromBody] EmployeeDto employeeDto)
     {
         var response = await _employeeService.UpdateEmployeeAsync(employeeId ,employeeDto);
         return Ok(response);
