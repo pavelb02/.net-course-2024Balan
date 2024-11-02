@@ -1,52 +1,85 @@
-﻿using BankSystem.App.Exeptions;
+﻿using AutoMapper;
+using BankSystem.App.Dto;
+using BankSystem.App.Exeptions;
 using BankSystem.App.Interfaces;
 using BankSystem.Domain.Models;
 
 namespace BankSystem.App.Services;
 
-public class EmployeeService
+public class EmployeeService : IEmployeeService
 {
     private readonly IStorage<Employee, SearchRequest> _employeeStorage;
+    private readonly IMapper _mapper;
 
-    public EmployeeService(IStorage<Employee, SearchRequest> employeeStorage)
+    public EmployeeService(IStorage<Employee, SearchRequest> employeeStorage, IMapper mapper)
     {
         _employeeStorage = employeeStorage;
+        _mapper = mapper;
     }
 
-    public async Task<Employee> GetEmployeeAsync(Guid employeeId)
+    public async Task<EmployeeDto> GetEmployeeAsync(Guid employeeId)
     {
-        return await _employeeStorage.GetByIdAsync(employeeId);
+        var employee = await _employeeStorage.GetByIdAsync(employeeId);
+        var employeeDto = _mapper.Map<EmployeeDto>(employee);
+        return employeeDto;
     }
 
-    public async Task AddEmployeesAsync(List<Employee> employees)
-    {
-        foreach (var employee in employees)
-        {
-            try
-            {
-                if (await ValidateAddEmployee(employee))
-                    await _employeeStorage.AddAsync(employee);
-            }
-            catch (ArgumentException ex)
-            {
-                throw new ArgumentException($"Ошибка при добавлении сотрудника: {ex.Message}", ex);
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine($"Ошибка: {ex.Message}\nТрассировка стека: {ex.StackTrace}");
-                throw;
-            }
-        }
-    }
-
-    public async Task UpdateEmployeeAsync(Employee newEmployee)
+    public async Task<Guid> AddEmployeesAsync(EmployeeDto employeeDto)
     {
         try
         {
-            if (await ValidateAddEmployee(newEmployee))
+            if (!await ValidateAddEmployeeAsync(employeeDto)) return Guid.Empty;
+            var employee = _mapper.Map<Employee>(employeeDto);
+            var employeeId = await _employeeStorage.AddAsync(employee);
+            return employeeId;
+        }
+        catch (ArgumentException ex)
+        {
+            throw new ArgumentException($"Ошибка при добавлении сотрудника: {ex.Message}", ex);
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Ошибка: {ex.Message}\nТрассировка стека: {ex.StackTrace}");
+            throw;
+        }
+    }
+
+    public async Task<Guid> UpdateEmployeeAsync(Guid employeeId, EmployeeDto newEmployee)
+    {
+        try
+        {
+            var updatedEmployeeId = Guid.Empty;
+            if (await ValidateAddEmployeeAsync(newEmployee))
             {
-                await _employeeStorage.UpdateAsync(newEmployee);
+                var employee = await _employeeStorage.GetByIdAsync(employeeId);
+            
+                if (!string.IsNullOrWhiteSpace(newEmployee.Name))
+                    employee.Name = newEmployee.Name;
+
+                if (!string.IsNullOrWhiteSpace(newEmployee.Surname))
+                    employee.Surname = newEmployee.Surname;
+
+                if (!string.IsNullOrWhiteSpace(newEmployee.NumPassport))
+                    employee.NumPassport = newEmployee.NumPassport;
+
+                if (newEmployee.DateBirthday != default)
+                    employee.DateBirthday = newEmployee.DateBirthday;
+
+                if (!string.IsNullOrWhiteSpace(newEmployee.Phone))
+                    employee.Phone = newEmployee.Phone;
+                
+                if (!string.IsNullOrWhiteSpace(newEmployee.Position))
+                    employee.Position = newEmployee.Position;
+
+                if (newEmployee.StartDate != default)
+                    employee.StartDate = newEmployee.StartDate;
+
+                if (newEmployee.Salary > 0)
+                    employee.Salary = newEmployee.Salary;
+
+                updatedEmployeeId = await _employeeStorage.UpdateAsync(_mapper.Map<Employee>(newEmployee));
             }
+            return updatedEmployeeId;
         }
         catch (ArgumentException ex)
         {
@@ -58,19 +91,21 @@ public class EmployeeService
             throw;
         }
     }
-
-    public async Task<List<Employee>> FilterEmployeesAsync(SearchRequest searchRequest)
+    
+    public async Task<Guid> DeleteEmployeeAsync(Guid employeeId)
+    {
+        var deletedId = await _employeeStorage.DeleteAsync(employeeId);
+        return deletedId;
+    }
+    
+    public async Task<List<EmployeeDto>> FilterEmployeesAsync(SearchRequest searchRequest)
     {
         var filteredEmployees = await _employeeStorage.GetCollectionAsync(searchRequest);
-        return filteredEmployees;
+        var filteredEmployeesDto = _mapper.Map<List<EmployeeDto>>(filteredEmployees);
+        return filteredEmployeesDto;
     }
 
-    public async Task DeleteEmployeeAsync(Guid employeeId)
-    {
-        await _employeeStorage.DeleteAsync(employeeId);
-    }
-
-    private static Task<bool> ValidateAddEmployee(Employee employee)
+    private static Task<bool> ValidateAddEmployeeAsync(EmployeeDto employee)
     {
         if (string.IsNullOrWhiteSpace(employee.Name))
         {

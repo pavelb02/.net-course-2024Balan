@@ -31,7 +31,7 @@ public class ClientDtoValidator : AbstractValidator<ClientDto>
         RuleFor(c => c.DateBirthday)
             .NotEmpty()
             .NotNull()
-            .WithMessage("Возраст не может быть пустым.");
+            .WithMessage("Дата рождения не может быть пустой.");
 
         RuleFor(c => c.Phone)
             .NotNull()

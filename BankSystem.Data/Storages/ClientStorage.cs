@@ -1,6 +1,4 @@
-﻿using BankSystem.App.Dto;
-using BankSystem.App.Exeptions;
-using BankSystem.App.Interfaces;
+﻿using BankSystem.App.Interfaces;
 using BankSystem.App.Services;
 using BankSystem.Domain.Models;
 using Microsoft.EntityFrameworkCore;
@@ -16,7 +14,7 @@ public class ClientStorage : IClientStorage
         _dbContext = new BankSystemDbContext();
     }
 
-    public async Task AddAsync(Client client)
+    public async Task<Guid> AddAsync(Client client)
     {
         if (await _dbContext.Clients.AnyAsync(c => c.Id == client.Id))
         {
@@ -24,6 +22,7 @@ public class ClientStorage : IClientStorage
         }
         await _dbContext.Clients.AddAsync(client);
         await _dbContext.SaveChangesAsync();
+        return client.Id;
     }
 
     public async Task<Client> GetByIdAsync(Guid clientId)
@@ -76,34 +75,39 @@ public class ClientStorage : IClientStorage
         return await request.ToListAsync();
     }
 
-    public async Task UpdateAsync(Client client)
+    public async Task<Guid> UpdateAsync(Client client)
     {
         _dbContext.Entry(client).State = EntityState.Modified;
         await _dbContext.SaveChangesAsync();
+        return client.Id;
     }
 
-    public async Task DeleteAsync(Guid clientId)
+    public async Task<Guid> DeleteAsync(Guid clientId)
     {
         var client = await _dbContext.Clients.FirstOrDefaultAsync(c => c.Id == clientId);
-        if (client == null) return;
+        if (client == null) return Guid.Empty;
         _dbContext.Clients.Remove(client);
-        
         await _dbContext.SaveChangesAsync();
+        return client.Id;
     }
-    public async Task AddAccountAsync(Guid clientId, Account account)
+    public async Task<Guid> AddAccountAsync(Guid clientId, Account account)
     {
         var client = await _dbContext.Clients.FirstOrDefaultAsync(c => c.Id == clientId);
+        if (client == null) throw new ArgumentException($"Клиент с Id {clientId} не найден.");
+        
         client.AccountsClient.Add(account);
         await _dbContext.SaveChangesAsync();
+        return client.Id;
     }
 
-    public async Task DeleteAccountAsync(Guid accountId)
+    public async Task<Guid> DeleteAccountAsync(Guid accountId)
     {
         var account = await _dbContext.Accounts.FirstOrDefaultAsync(a => a.Id == accountId);
         if (account != null)
         {
             _dbContext.Accounts.Remove(account);
             await _dbContext.SaveChangesAsync();
+            return account.Id;
         }
         else
         {

@@ -15,7 +15,7 @@ public class EmployeeStorage : IStorage<Employee, SearchRequest>
         _dbContext = new BankSystemDbContext();
     }
     
-    public async Task AddAsync(Employee employee)
+    public async Task<Guid> AddAsync(Employee employee)
     {
         if (await _dbContext.Employees.AnyAsync(e => e.Id == employee.Id))
         {
@@ -24,6 +24,8 @@ public class EmployeeStorage : IStorage<Employee, SearchRequest>
 
         await _dbContext.Employees.AddAsync(employee);
         await _dbContext.SaveChangesAsync();
+
+        return employee.Id;
     }
 
     public async Task<Employee> GetByIdAsync(Guid employeeId)
@@ -75,19 +77,23 @@ public class EmployeeStorage : IStorage<Employee, SearchRequest>
         return await request.ToListAsync();
     }
 
-    public async Task UpdateAsync(Employee employee)
+    public async Task<Guid> UpdateAsync(Employee employee)
     {
-        _dbContext.Update(employee);
+        _dbContext.Entry(employee).State = EntityState.Modified;
         await _dbContext.SaveChangesAsync();
+
+        return employee.Id;
     }
 
-    public async Task DeleteAsync(Guid employeeId)
+    public async Task<Guid> DeleteAsync(Guid employeeId)
     {
         var employee = await _dbContext.Employees.FirstOrDefaultAsync(e => e.Id == employeeId);
-        if (employee == null) return;
-        _dbContext.Employees.Remove(employee);
+        if (employee == null) return Guid.Empty;
         
+        _dbContext.Employees.Remove(employee);
         await _dbContext.SaveChangesAsync();
+
+        return employee.Id;
     }
     
     public async Task<Employee?> SearchYoungEmployee()

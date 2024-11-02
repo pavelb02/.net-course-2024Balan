@@ -30,4 +30,25 @@ public class ClientController : ControllerBase
         return Ok(response);
     }
     
+    [HttpDelete("{clientId}")]
+    public async Task<IActionResult> DeleteClient([FromRoute] Guid clientId)
+    {
+        var response = await _clientService.DeleteClientAsync(clientId);
+        return Ok(response);
+    }
+    
+    [HttpPut]
+    public async Task<IActionResult> UpdateClient([FromBody] Guid clientId, ClientDto clientDto)
+    {
+        var response = await _clientService.UpdateClientAsync(clientId ,clientDto);
+        return Ok(response);
+    }
+    
+    [HttpGet]
+    public async Task<IActionResult> SearchClients([FromQuery] SearchRequest searchRequest)
+    {
+        var response = await _clientService.FilterClientsAsync(searchRequest);
+        return Ok(response);
+    }
+    
 }

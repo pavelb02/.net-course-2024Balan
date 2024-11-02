@@ -22,7 +22,7 @@ public class ExportServiceTests
     
         _mapper = mapperConfig.CreateMapper();
         var employeeStorage = new EmployeeStorage();
-        _employeeService = new EmployeeService(employeeStorage);
+        _employeeService = new EmployeeService(employeeStorage, _mapper);
         var currencyStorage = new CurrencyStorage();
         var currencyService = new CurrencyService(currencyStorage);
         var clientStorage = new ClientStorage();
@@ -113,7 +113,8 @@ public class ExportServiceTests
     public async Task WriteEmployeesToCsvAndReadFromDbTest()
     {
         //Arrange
-        List<Employee> employeesFromDb = new (await _employeeService.FilterEmployeesAsync(new SearchRequest {PageSize = 5, PageNumber = 1}));
+        List<EmployeeDto> employeesFromDbDto = new (await _employeeService.FilterEmployeesAsync(new SearchRequest {PageSize = 5, PageNumber = 1}));
+        var employeesFromDb = _mapper.Map<List<Employee>>(employeesFromDbDto);
         var pathToDirectory = Path.Combine("D:", "Программирование","Dex backend 2024", "Practice",".net-course-2024Balan", "Tool");
         var fileName = "employeesCsv.csv";
         ExportService<Employee> exportService = new ExportService<Employee>(pathToDirectory, fileName);
@@ -134,24 +135,29 @@ public class ExportServiceTests
         var fileName = "employeesCsv.csv";
         ExportService<Employee> exportService = new ExportService<Employee>(pathToDirectory, fileName);
         var employeesFromFile = exportService.ReadItemsFromCsv();
+        var employeesFromFileDto = _mapper.Map<List<EmployeeDto>>(employeesFromFile);
         
         //Act
-        await _employeeService.AddEmployeesAsync(employeesFromFile);
-        var employeesFromDb = new List<Employee>();
+        foreach (var employeeDto in employeesFromFileDto)
+        {
+            await _employeeService.AddEmployeesAsync(employeeDto);
+        }
+        var employeesFromDbDto = new List<EmployeeDto>();
         foreach (var employee in employeesFromFile)
         {
-            employeesFromDb.Add(await _employeeService.GetEmployeeAsync(employee.Id));
+            employeesFromDbDto.Add(await _employeeService.GetEmployeeAsync(employee.Id));
         }
 
         //Assert
-        Assert.Equal(employeesFromFile, employeesFromDb);
+        Assert.Equal(employeesFromFileDto, employeesFromDbDto);
     }
     
     [Fact]
     public async Task WriteEmployeesToJsonAndReadEmployeesFromJsonTest()
     {
         //Arrange
-        List<Employee> employeesFromDb = new (await _employeeService.FilterEmployeesAsync(new SearchRequest{PageSize = 3, PageNumber = 1}));
+        List<EmployeeDto> employeesFromDbDto = new (await _employeeService.FilterEmployeesAsync(new SearchRequest{PageSize = 3, PageNumber = 1}));
+        var employeesFromDb = _mapper.Map<List<Employee>>(employeesFromDbDto);
         var pathToDirectory = Path.Combine("D:", "Программирование", "Dex backend 2024", "Practice", ".net-course-2024Balan", "Tool");
         var fileName = "employeesJson.json";
         var fullPath = Path.Combine(pathToDirectory, fileName);
@@ -169,7 +175,8 @@ public class ExportServiceTests
     public async Task WriteEmployeeToJsonAndReadEmployeeFromJsonTest()
     {
         //Arrange
-        List<Employee> employeesFromDb = new (await _employeeService.FilterEmployeesAsync(new SearchRequest{PageSize = 3, PageNumber = 1}));
+        List<EmployeeDto> employeesFromDbDto = new (await _employeeService.FilterEmployeesAsync(new SearchRequest{PageSize = 3, PageNumber = 1}));
+        var employeesFromDb = _mapper.Map<List<Employee>>(employeesFromDbDto);
         var pathToDirectory = Path.Combine("D:", "Программирование", "Dex backend 2024", "Practice", ".net-course-2024Balan", "Tool");
         var fileName = "employeeJson.json";
         var fullPath = Path.Combine(pathToDirectory, fileName);

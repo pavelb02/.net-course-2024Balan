@@ -26,28 +26,29 @@ public class ClientService : IClientService
        return clientDto;
     }
     
-    public async Task DeleteClientAsync(Guid clientId)
+    public async Task<Guid> DeleteClientAsync(Guid clientId)
     {
-        await _clientStorage.DeleteAsync(clientId);
+        var deletedId = await _clientStorage.DeleteAsync(clientId);
+        return deletedId;
     }
     
-    public async Task DeleteAccountAsync(Guid accountId)
+    public async Task<Guid> DeleteAccountAsync(Guid accountId)
     {
-        await _clientStorage.DeleteAccountAsync(accountId);
+        var deletedAccountId = await _clientStorage.DeleteAccountAsync(accountId);
+        return deletedAccountId;
     }
 
     public async Task<Guid> AddClientAsync(ClientDto clientDto, string currencyCode)
     {
         try
         {
-            
             if (! await ValidateAddClientAsync(clientDto)) return Guid.Empty;
             var currencyId = await _currencyService.GetCurrencyAsync(currencyCode);
             var account = new Account(clientDto.Id, currencyId);
             clientDto.AccountsClient.Add(account);
             var client = _mapper.Map<Client>(clientDto);
-            await _clientStorage.AddAsync(client);
-            return client.Id;
+            var clientId = await _clientStorage.AddAsync(client);
+            return clientId;
         }
         catch (ArgumentException ex)
         {
@@ -60,14 +61,15 @@ public class ClientService : IClientService
         }
     }
 
-    public async Task AddAccountAsync(Guid clientId, string currencyCode)
+    public async Task<Guid> AddAccountAsync(Guid clientId, string currencyCode)
     {
         try
         {
             var client = await _clientStorage.GetByIdAsync(clientId);
             var currencyId = await _currencyService.GetCurrencyAsync(currencyCode);
             var account = new Account(client.Id, currencyId);
-            await _clientStorage.AddAccountAsync(clientId, account);
+            var accountId = await _clientStorage.AddAccountAsync(clientId, account);
+            return accountId;
         }
         catch (ArgumentException ex)
         {
@@ -80,10 +82,11 @@ public class ClientService : IClientService
         }
     }
 
-    public async Task UpdateClientAsync(Guid clientId, ClientDto newClient)
+    public async Task<Guid> UpdateClientAsync(Guid clientId, ClientDto newClient)
     {
         try
         {
+            var updatedClientId = Guid.Empty;
             if (await ValidateAddClientAsync(newClient))
             {
                 var client = await _clientStorage.GetByIdAsync(clientId);
@@ -111,8 +114,9 @@ public class ClientService : IClientService
                     }
                 }
 
-                await _clientStorage.UpdateAsync(_mapper.Map<Client>(newClient));
+                updatedClientId = await _clientStorage.UpdateAsync(_mapper.Map<Client>(newClient));
             }
+            return updatedClientId;
         }
         catch (ArgumentException ex)
         {

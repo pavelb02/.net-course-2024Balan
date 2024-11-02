@@ -33,7 +33,7 @@ public class EquivalenceTests
         _clientStorage = new ClientStorage();
         _clientService = new ClientService(_clientStorage, _currencyService, _mapper);
         _employeeStorage = new EmployeeStorage();
-        _employeeService = new EmployeeService(_employeeStorage);
+        _employeeService = new EmployeeService(_employeeStorage, _mapper);
     }
 
     string[] positions =
@@ -62,7 +62,7 @@ public class EquivalenceTests
         var newClient = new ClientDto(client.Name, client.Surname, client.NumPassport, client.Phone,
             client.DateBirthday);
         //Act
-        Account result = clientsBankDictionaryAccount[newClient];
+        AccountDto result = clientsBankDictionaryAccount[newClient];
         //Assert
         Assert.Equal(result, clientsBankDictionaryAccount[client]);
     }
@@ -76,7 +76,7 @@ public class EquivalenceTests
         var client = clientsBankDictionaryAccount.Keys.First();
         var newClient = new ClientDto(client.Name, client.Surname, client.NumPassport, client.Phone, client.DateBirthday);
         //Act
-        Account[] result = clientsBankDictionaryAccount[newClient];
+        AccountDto[] result = clientsBankDictionaryAccount[newClient];
         //Assert
         Assert.Equal(result, clientsBankDictionaryAccount[client]);
     }
@@ -87,9 +87,8 @@ public class EquivalenceTests
         //Arrange
         var employeesBankList = _testDataGenerator.GenerateEmployeesBankList(10, positions);
         var employee = employeesBankList.First();
-        var newEmployee = new Employee(employee.Name, employee.Surname, employee.NumPassport,
-            employee.Phone,
-            employee.Position, employee.StartDate, employee.Salary, employee.DateBirthday);
+        var newEmployee = new EmployeeDto(employee.Name, employee.Surname, employee.NumPassport,
+            employee.Phone, employee.Position, employee.StartDate, employee.Salary, employee.DateBirthday);
         //Act
         bool result = employeesBankList.Contains(newEmployee);
         //Assert
@@ -249,25 +248,32 @@ public class EquivalenceTests
     public async Task AddEmployeeAsyncPositiveListTest()
     {
         //Arrange
-        var employeesBankList = _testDataGenerator.GenerateEmployeesBankList(3, positions);
-        await _employeeService.AddEmployeesAsync(employeesBankList);
+        var employeesBankListDto = _testDataGenerator.GenerateEmployeesBankList(3, positions);
+        foreach (var employeeDto in employeesBankListDto)
+        {
+            await _employeeService.AddEmployeesAsync(employeeDto);
+        }
+        var employee = _mapper.Map<Employee>(employeesBankListDto.First());
         //Act
-        var employee = await _employeeStorage.GetCollectionAsync(new SearchRequest());
+        var employeeFromBd = await _employeeStorage.GetCollectionAsync(new SearchRequest {NumPassport = employee.NumPassport});
         //Assert
-        Assert.Equal(employee, employeesBankList);
+        Assert.Equal(employee, employeeFromBd.First());
     }
 
     [Fact]
     public async Task FilterEmployeeAsyncPositiveTest()
     {
         //Arrange
-        var employeesBankList = _testDataGenerator.GenerateEmployeesBankList(10, positions);
-        await _employeeService.AddEmployeesAsync(employeesBankList);
-        var searchRequest = new SearchRequest { Name = employeesBankList[0].Name };
+        var employeesBankListDto = _testDataGenerator.GenerateEmployeesBankList(3, positions);
+        foreach (var employeeDto in employeesBankListDto)
+        {
+            await _employeeService.AddEmployeesAsync(employeeDto);
+        }
+        var searchRequest = new SearchRequest { NumPassport = employeesBankListDto[0].NumPassport };
         //Act
-        var filteredEmployees = await _employeeService.FilterEmployeesAsync(searchRequest);
+        var filteredEmployeesDto = await _employeeService.FilterEmployeesAsync(searchRequest);
         //Assert
-        Assert.Equal(employeesBankList[0].NumPassport, filteredEmployees.First().NumPassport);
+        Assert.Equal(employeesBankListDto[0].NumPassport, filteredEmployeesDto.First().NumPassport);
     }
 
     [Fact]
