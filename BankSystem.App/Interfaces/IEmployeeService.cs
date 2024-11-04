@@ -6,9 +6,9 @@ namespace BankSystem.App.Interfaces;
 
 public interface IEmployeeService
 {
-    Task<EmployeeDto> GetEmployeeAsync(Guid employeeId);
-    Task<Guid> AddEmployeeAsync(EmployeeDto employee);
-    Task<Guid> UpdateEmployeeAsync(Guid employeeId, EmployeeDto newEmployee);
-    Task<Guid> DeleteEmployeeAsync(Guid employeeId);
-    Task<List<EmployeeDto>> FilterEmployeesAsync(SearchRequest searchRequest);
+    Task<EmployeeDto> GetEmployeeAsync(Guid employeeId, CancellationToken cancellationToken);
+    Task<Guid> AddEmployeeAsync(EmployeeDto employee, CancellationToken cancellationToken);
+    Task<Guid> UpdateEmployeeAsync(Guid employeeId, EmployeeDto newEmployee, CancellationToken cancellationToken);
+    Task<Guid> DeleteEmployeeAsync(Guid employeeId, CancellationToken cancellationToken);
+    Task<List<EmployeeDto>> FilterEmployeesAsync(SearchRequest searchRequest, CancellationToken cancellationToken);
 }

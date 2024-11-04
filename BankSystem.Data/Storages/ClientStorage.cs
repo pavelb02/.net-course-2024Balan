@@ -14,25 +14,31 @@ public class ClientStorage : IClientStorage
         _dbContext = new BankSystemDbContext();
     }
 
-    public async Task<Guid> AddAsync(Client client)
+    public async Task<Guid> AddAsync(Client client, CancellationToken cancellationToken)
     {
         if (await _dbContext.Clients.AnyAsync(c => c.Id == client.Id))
         {
             throw new InvalidOperationException($"Клиент с ID {client.Id} уже существует.");
         }
+        
         await _dbContext.Clients.AddAsync(client);
         await _dbContext.SaveChangesAsync();
+        
         return client.Id;
     }
 
-    public async Task<Client> GetByIdAsync(Guid clientId)
+    public async Task<Client> GetByIdAsync(Guid clientId, CancellationToken cancellationToken)
     {
         var client = await _dbContext.Clients.FirstOrDefaultAsync(c => c.Id == clientId);
-        if (client == null) throw new ArgumentException($"Клиент с Id {clientId} не найден.");
+        if (client == null)
+        {
+            throw new ArgumentException($"Клиент с Id {clientId} не найден.");
+        }
+        
         return client;
     }
 
-    public async Task<List<Client>> GetCollectionAsync(SearchRequest searchRequest)
+    public async Task<List<Client>> GetCollectionAsync(SearchRequest searchRequest, CancellationToken cancellationToken)
     {
         IQueryable<Client> request = _dbContext.Clients.Include(c => c.AccountsClient);
         if (!string.IsNullOrWhiteSpace(searchRequest.Name))
@@ -75,44 +81,53 @@ public class ClientStorage : IClientStorage
         return await request.ToListAsync();
     }
 
-    public async Task<Guid> UpdateAsync(Client client)
+    public async Task<Guid> UpdateAsync(Client client, CancellationToken cancellationToken)
     {
         _dbContext.Entry(client).State = EntityState.Modified;
         await _dbContext.SaveChangesAsync();
+        
         return client.Id;
     }
 
-    public async Task<Guid> DeleteAsync(Guid clientId)
+    public async Task<Guid> DeleteAsync(Guid clientId, CancellationToken cancellationToken)
     {
         var client = await _dbContext.Clients.FirstOrDefaultAsync(c => c.Id == clientId);
-        if (client == null) return Guid.Empty;
+        if (client == null)
+        {
+            return Guid.Empty;
+        }
+        
         _dbContext.Clients.Remove(client);
         await _dbContext.SaveChangesAsync();
+        
         return client.Id;
     }
-    public async Task<Guid> AddAccountAsync(Guid clientId, Account account)
+    public async Task<Guid> AddAccountAsync(Guid clientId, Account account, CancellationToken cancellationToken)
     {
         var client = await _dbContext.Clients.FirstOrDefaultAsync(c => c.Id == clientId);
-        if (client == null) throw new ArgumentException($"Клиент с Id {clientId} не найден.");
+        if (client == null)
+        {
+            throw new ArgumentException($"Клиент с Id {clientId} не найден.");
+        }
         
         client.AccountsClient.Add(account);
         await _dbContext.SaveChangesAsync();
+        
         return client.Id;
     }
 
-    public async Task<Guid> DeleteAccountAsync(Guid accountId)
+    public async Task<Guid> DeleteAccountAsync(Guid accountId, CancellationToken cancellationToken)
     {
         var account = await _dbContext.Accounts.FirstOrDefaultAsync(a => a.Id == accountId);
-        if (account != null)
-        {
-            _dbContext.Accounts.Remove(account);
-            await _dbContext.SaveChangesAsync();
-            return account.Id;
-        }
-        else
+        if (account == null)
         {
             throw new ArgumentException($"Аккаунт с Id {accountId} не найден.");
         }
+        
+        _dbContext.Accounts.Remove(account);
+        await _dbContext.SaveChangesAsync();
+        
+        return account.Id;
     }
 
     public async Task<Client?> SearchYoungClientAsync()

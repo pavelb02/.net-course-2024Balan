@@ -17,37 +17,37 @@ public class EmployeeController : ControllerBase
     }
 
     [HttpGet("{employeeId}")]
-    public async Task<IActionResult> GetEmployee([FromRoute] Guid employeeId)
+    public async Task<IActionResult> GetEmployee([FromRoute] Guid employeeId, CancellationToken cancellationToken)
     {
-        var response = await _employeeService.GetEmployeeAsync(employeeId);
+        var response = await _employeeService.GetEmployeeAsync(employeeId, cancellationToken);
         return Ok(response);
     }
     
     [HttpPost]
-    public async Task<IActionResult> AddEmployee([FromBody] EmployeeDto employeeDto)
+    public async Task<IActionResult> AddEmployee([FromBody] EmployeeDto employeeDto, CancellationToken cancellationToken)
     {
-        var response = await _employeeService.AddEmployeeAsync(employeeDto);
+        var response = await _employeeService.AddEmployeeAsync(employeeDto, cancellationToken);
         return Ok(response);
     }
     
     [HttpDelete("{employeeId}")]
-    public async Task<IActionResult> DeleteEmployee([FromRoute] Guid employeeId)
+    public async Task<IActionResult> DeleteEmployee([FromRoute] Guid employeeId, CancellationToken cancellationToken)
     {
-        var response = await _employeeService.DeleteEmployeeAsync(employeeId);
+        var response = await _employeeService.DeleteEmployeeAsync(employeeId, cancellationToken);
         return Ok(response);
     }
     
     [HttpPut]
-    public async Task<IActionResult> UpdateEmployee([FromRoute] Guid employeeId, [FromBody] EmployeeDto employeeDto)
+    public async Task<IActionResult> UpdateEmployee([FromRoute] Guid employeeId, [FromBody] EmployeeDto employeeDto, CancellationToken cancellationToken)
     {
-        var response = await _employeeService.UpdateEmployeeAsync(employeeId ,employeeDto);
+        var response = await _employeeService.UpdateEmployeeAsync(employeeId ,employeeDto, cancellationToken);
         return Ok(response);
     }
     
     [HttpGet]
-    public async Task<IActionResult> SearchEmployees([FromQuery] SearchRequest searchRequest)
+    public async Task<IActionResult> SearchEmployees([FromQuery] SearchRequest searchRequest, CancellationToken cancellationToken)
     {
-        var response = await _employeeService.FilterEmployeesAsync(searchRequest);
+        var response = await _employeeService.FilterEmployeesAsync(searchRequest, cancellationToken);
         return Ok(response);
     }
     

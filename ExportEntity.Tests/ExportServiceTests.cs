@@ -12,6 +12,7 @@ public class ExportServiceTests
     private EmployeeService _employeeService;
     private ClientService _clientService;
     private IMapper _mapper;
+    CancellationToken cancellationToken = CancellationToken.None;
 
     public ExportServiceTests()
     {
@@ -33,7 +34,7 @@ public class ExportServiceTests
     public async Task WriteClientsToCsvAndReadFromDbTest()
     {
         //Arrange
-        List<Client> clientsFromDb = new (_mapper.Map<List<Client>>(await _clientService.FilterClientsAsync(new SearchRequest())));
+        List<Client> clientsFromDb = new (_mapper.Map<List<Client>>(await _clientService.FilterClientsAsync(new SearchRequest(), cancellationToken)));
         string pathToDirectory = Path.Combine("D:", "Программирование","Dex backend 2024", "Practice",".net-course-2024Balan", "Tool");
         string fileName = "clientsCsv.csv";
         ExportService<Client> exportService = new ExportService<Client>(pathToDirectory, fileName);
@@ -59,12 +60,12 @@ public class ExportServiceTests
         //Act
         foreach (var client in clientsFromFileDto)
         {
-            await _clientService.AddClientAsync(client, "USD");
+            await _clientService.AddClientAsync(client, "USD", cancellationToken);
         }
         List<Client> clientsFromDb = new List<Client>();
         foreach (var client in clientsFromFile)
         {
-            clientsFromDb.Add(_mapper.Map<Client>(await _clientService.GetClientAsync(client.Id)));
+            clientsFromDb.Add(_mapper.Map<Client>(await _clientService.GetClientAsync(client.Id, cancellationToken)));
         }
 
         //Assert
@@ -75,7 +76,7 @@ public class ExportServiceTests
     public async Task WriteClientsToJsonAndReadClientsFromJsonTest()
     {
         //Arrange
-        List<ClientDto> clientsFromDbDto = new (await _clientService.FilterClientsAsync(new SearchRequest()));
+        List<ClientDto> clientsFromDbDto = new (await _clientService.FilterClientsAsync(new SearchRequest(), cancellationToken));
         var clientsFromDb = _mapper.Map<List<Client>>(clientsFromDbDto);
         var pathToDirectory = Path.Combine("D:", "Программирование", "Dex backend 2024", "Practice", ".net-course-2024Balan", "Tool");
         var fileName = "clientsJson.json";
@@ -94,7 +95,7 @@ public class ExportServiceTests
     public async Task WriteClientToJsonAndReadClientFromJsonTest()
     {
         //Arrange
-        List<ClientDto> clientsFromDbDto = new (await _clientService.FilterClientsAsync(new SearchRequest()));
+        List<ClientDto> clientsFromDbDto = new (await _clientService.FilterClientsAsync(new SearchRequest(), cancellationToken));
         var clientsFromDb = _mapper.Map<List<Client>>(clientsFromDbDto);
         var pathToDirectory = Path.Combine("D:", "Программирование", "Dex backend 2024", "Practice", ".net-course-2024Balan", "Tool");
         var fileName = "clientJson.json";
@@ -113,7 +114,7 @@ public class ExportServiceTests
     public async Task WriteEmployeesToCsvAndReadFromDbTest()
     {
         //Arrange
-        List<EmployeeDto> employeesFromDbDto = new (await _employeeService.FilterEmployeesAsync(new SearchRequest {PageSize = 5, PageNumber = 1}));
+        List<EmployeeDto> employeesFromDbDto = new (await _employeeService.FilterEmployeesAsync(new SearchRequest {PageSize = 5, PageNumber = 1}, cancellationToken));
         var employeesFromDb = _mapper.Map<List<Employee>>(employeesFromDbDto);
         var pathToDirectory = Path.Combine("D:", "Программирование","Dex backend 2024", "Practice",".net-course-2024Balan", "Tool");
         var fileName = "employeesCsv.csv";
@@ -140,12 +141,12 @@ public class ExportServiceTests
         //Act
         foreach (var employeeDto in employeesFromFileDto)
         {
-            await _employeeService.AddEmployeeAsync(employeeDto);
+            await _employeeService.AddEmployeeAsync(employeeDto, cancellationToken);
         }
         var employeesFromDbDto = new List<EmployeeDto>();
         foreach (var employee in employeesFromFile)
         {
-            employeesFromDbDto.Add(await _employeeService.GetEmployeeAsync(employee.Id));
+            employeesFromDbDto.Add(await _employeeService.GetEmployeeAsync(employee.Id, cancellationToken));
         }
 
         //Assert
@@ -156,7 +157,7 @@ public class ExportServiceTests
     public async Task WriteEmployeesToJsonAndReadEmployeesFromJsonTest()
     {
         //Arrange
-        List<EmployeeDto> employeesFromDbDto = new (await _employeeService.FilterEmployeesAsync(new SearchRequest{PageSize = 3, PageNumber = 1}));
+        List<EmployeeDto> employeesFromDbDto = new (await _employeeService.FilterEmployeesAsync(new SearchRequest{PageSize = 3, PageNumber = 1}, cancellationToken));
         var employeesFromDb = _mapper.Map<List<Employee>>(employeesFromDbDto);
         var pathToDirectory = Path.Combine("D:", "Программирование", "Dex backend 2024", "Practice", ".net-course-2024Balan", "Tool");
         var fileName = "employeesJson.json";
@@ -175,7 +176,7 @@ public class ExportServiceTests
     public async Task WriteEmployeeToJsonAndReadEmployeeFromJsonTest()
     {
         //Arrange
-        List<EmployeeDto> employeesFromDbDto = new (await _employeeService.FilterEmployeesAsync(new SearchRequest{PageSize = 3, PageNumber = 1}));
+        List<EmployeeDto> employeesFromDbDto = new (await _employeeService.FilterEmployeesAsync(new SearchRequest{PageSize = 3, PageNumber = 1}, cancellationToken));
         var employeesFromDb = _mapper.Map<List<Employee>>(employeesFromDbDto);
         var pathToDirectory = Path.Combine("D:", "Программирование", "Dex backend 2024", "Practice", ".net-course-2024Balan", "Tool");
         var fileName = "employeeJson.json";

@@ -13,6 +13,7 @@ public class EmployeeStorageTests
     private EmployeeStorage _employeeStorage;
    
     private IMapper _mapper;
+    CancellationToken cancellationToken = CancellationToken.None;
 
     public EmployeeStorageTests()
     {
@@ -33,9 +34,9 @@ public class EmployeeStorageTests
         var employeesBankListDto = _testDataGenerator.GenerateEmployeesBankList(1, positions);
         var employee = _mapper.Map<Employee>(employeesBankListDto.First());
         //Act
-        await _employeeStorage.AddAsync(employee);
+        await _employeeStorage.AddAsync(employee, cancellationToken);
         //Assert
-        Assert.NotNull(_employeeStorage.GetCollectionAsync(new SearchRequest()));
+        Assert.NotNull(_employeeStorage.GetCollectionAsync(new SearchRequest(), cancellationToken));
     }
     [Fact]
     public async Task SearchYoungEmployeePositiv()
@@ -45,7 +46,7 @@ public class EmployeeStorageTests
         var employeesBankList = _mapper.Map<List<Employee>>(employeesBankListDto);
         foreach (var employee in employeesBankList)
         {
-            await _employeeStorage.AddAsync(employee);
+            await _employeeStorage.AddAsync(employee, cancellationToken);
         }
         var youngEmployee = employeesBankList.MinBy(e => e.DateBirthday);
         //Act
@@ -61,7 +62,7 @@ public class EmployeeStorageTests
         var employeesBankList = _mapper.Map<List<Employee>>(employeesBankListDto);
         foreach (var employee in employeesBankList)
         {
-            await _employeeStorage.AddAsync(employee);
+            await _employeeStorage.AddAsync(employee, cancellationToken);
         }
         var oldEmployee = employeesBankList.MaxBy(e => e.DateBirthday);
         //Act
@@ -77,7 +78,7 @@ public class EmployeeStorageTests
         var employeesBankList = _mapper.Map<List<Employee>>(employeesBankListDto);
         foreach (var employee in employeesBankList)
         {
-            await _employeeStorage.AddAsync(employee);
+            await _employeeStorage.AddAsync(employee, cancellationToken);
         }
         var dateNow = DateTime.Now;
         var averageAge = (int)employeesBankList.Average(e => dateNow.Year - e.DateBirthday.Year -

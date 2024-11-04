@@ -12,6 +12,7 @@ public class ClientStorageTests
     private ClientStorage _clientStorage;
    
     private IMapper _mapper;
+    CancellationToken cancellationToken = CancellationToken.None;
 
     public ClientStorageTests()
     {
@@ -30,9 +31,9 @@ public class ClientStorageTests
         var clientsBankList = _testDataGenerator.GenerateClientsBankList(1);
         var client = _mapper.Map<Client>(clientsBankList.First());
         //Act
-        await _clientStorage.AddAsync(client);
+        await _clientStorage.AddAsync(client, cancellationToken);
         //Assert
-        var addedClient = _clientStorage.GetByIdAsync(clientsBankList.First().Id);
+        var addedClient = _clientStorage.GetByIdAsync(clientsBankList.First().Id, cancellationToken);
         Assert.NotNull(addedClient);
     }
     [Fact]
@@ -42,7 +43,7 @@ public class ClientStorageTests
         var clientsBankList = _testDataGenerator.GenerateClientsBankList(10);
         foreach (var client in clientsBankList)
         {
-            await _clientStorage.AddAsync(_mapper.Map<Client>(client));
+            await _clientStorage.AddAsync(_mapper.Map<Client>(client), cancellationToken);
         }
         
         var youngClient = clientsBankList.MinBy(c => c.DateBirthday);
@@ -58,7 +59,7 @@ public class ClientStorageTests
         var clientsBankList = _testDataGenerator.GenerateClientsBankList(10);
         foreach (var client in clientsBankList)
         {
-            _clientStorage.AddAsync(_mapper.Map<Client>(client));
+            _clientStorage.AddAsync(_mapper.Map<Client>(client), cancellationToken);
         }
         
         var oldClient = clientsBankList.MaxBy(c => c.DateBirthday);
@@ -74,7 +75,7 @@ public class ClientStorageTests
         var clientsBankList = _testDataGenerator.GenerateClientsBankList(10);
         foreach (var client in clientsBankList)
         {
-            await _clientStorage.AddAsync(_mapper.Map<Client>(client));
+            await _clientStorage.AddAsync(_mapper.Map<Client>(client), cancellationToken);
         }
         var dateNow = DateTime.Now;
         var averageAge = (int)clientsBankList.Average(c => dateNow.Year - c.DateBirthday.Year -

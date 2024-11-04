@@ -6,12 +6,12 @@ namespace BankSystem.App.Interfaces;
 
 public interface IClientService
 {
-    Task<ClientDto> GetClientAsync(Guid clientId);
-    Task<Guid> DeleteClientAsync(Guid clientId);
-    Task<Guid> DeleteAccountAsync(Guid accountId);
-    Task<Guid> AddClientAsync(ClientDto client, string currencyCode);
-    Task<Guid> AddAccountAsync(Guid clientId, string currencyCode);
-    Task<Guid> UpdateClientAsync(Guid clientId, ClientDto newClient);
-    Task<List<ClientDto>> FilterClientsAsync(SearchRequest searchRequest);
-    //Task<bool> Debit(WithdrawalRequest withdrawalRequest);
+    Task<ClientDto> GetClientAsync(Guid clientId, CancellationToken cancellationToken);
+    Task<Guid> DeleteClientAsync(Guid clientId, CancellationToken cancellationToken);
+    Task<Guid> DeleteAccountAsync(Guid accountId, CancellationToken cancellationToken);
+    Task<Guid> AddClientAsync(ClientDto client, string currencyCode, CancellationToken cancellationToken);
+    Task<Guid> AddAccountAsync(Guid clientId, string currencyCode, CancellationToken cancellationToken);
+    Task<Guid> UpdateClientAsync(Guid clientId, ClientDto newClient, CancellationToken cancellationToken);
+    Task<List<ClientDto>> FilterClientsAsync(SearchRequest searchRequest, CancellationToken cancellationToken);
+    //Task<bool> Debit(WithdrawalRequest withdrawalRequest, CancellationToken cancellationToken);
 }

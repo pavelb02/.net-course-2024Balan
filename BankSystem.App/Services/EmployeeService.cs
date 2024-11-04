@@ -17,20 +17,24 @@ public class EmployeeService : IEmployeeService
         _mapper = mapper;
     }
 
-    public async Task<EmployeeDto> GetEmployeeAsync(Guid employeeId)
+    public async Task<EmployeeDto> GetEmployeeAsync(Guid employeeId, CancellationToken cancellationToken)
     {
-        var employee = await _employeeStorage.GetByIdAsync(employeeId);
+        var employee = await _employeeStorage.GetByIdAsync(employeeId, cancellationToken);
         var employeeDto = _mapper.Map<EmployeeDto>(employee);
         return employeeDto;
     }
 
-    public async Task<Guid> AddEmployeeAsync(EmployeeDto employeeDto)
+    public async Task<Guid> AddEmployeeAsync(EmployeeDto employeeDto, CancellationToken cancellationToken)
     {
         try
         {
-            if (!await ValidateAddEmployeeAsync(employeeDto)) return Guid.Empty;
+            if (!await ValidateAddEmployeeAsync(employeeDto))
+            {
+                return Guid.Empty;
+            }
+            
             var employee = _mapper.Map<Employee>(employeeDto);
-            var employeeId = await _employeeStorage.AddAsync(employee);
+            var employeeId = await _employeeStorage.AddAsync(employee, cancellationToken);
             return employeeId;
         }
         catch (ArgumentException ex)
@@ -44,14 +48,14 @@ public class EmployeeService : IEmployeeService
         }
     }
 
-    public async Task<Guid> UpdateEmployeeAsync(Guid employeeId, EmployeeDto newEmployee)
+    public async Task<Guid> UpdateEmployeeAsync(Guid employeeId, EmployeeDto newEmployee, CancellationToken cancellationToken)
     {
         try
         {
             var updatedEmployeeId = Guid.Empty;
             if (await ValidateAddEmployeeAsync(newEmployee))
             {
-                var employee = await _employeeStorage.GetByIdAsync(employeeId);
+                var employee = await _employeeStorage.GetByIdAsync(employeeId, cancellationToken);
             
                 if (!string.IsNullOrWhiteSpace(newEmployee.Name))
                     employee.Name = newEmployee.Name;
@@ -77,7 +81,7 @@ public class EmployeeService : IEmployeeService
                 if (newEmployee.Salary > 0)
                     employee.Salary = newEmployee.Salary;
 
-                updatedEmployeeId = await _employeeStorage.UpdateAsync(_mapper.Map<Employee>(newEmployee));
+                updatedEmployeeId = await _employeeStorage.UpdateAsync(_mapper.Map<Employee>(newEmployee), cancellationToken);
             }
             return updatedEmployeeId;
         }
@@ -92,15 +96,15 @@ public class EmployeeService : IEmployeeService
         }
     }
     
-    public async Task<Guid> DeleteEmployeeAsync(Guid employeeId)
+    public async Task<Guid> DeleteEmployeeAsync(Guid employeeId, CancellationToken cancellationToken)
     {
-        var deletedId = await _employeeStorage.DeleteAsync(employeeId);
+        var deletedId = await _employeeStorage.DeleteAsync(employeeId, cancellationToken);
         return deletedId;
     }
     
-    public async Task<List<EmployeeDto>> FilterEmployeesAsync(SearchRequest searchRequest)
+    public async Task<List<EmployeeDto>> FilterEmployeesAsync(SearchRequest searchRequest, CancellationToken cancellationToken)
     {
-        var filteredEmployees = await _employeeStorage.GetCollectionAsync(searchRequest);
+        var filteredEmployees = await _employeeStorage.GetCollectionAsync(searchRequest, cancellationToken);
         var filteredEmployeesDto = _mapper.Map<List<EmployeeDto>>(filteredEmployees);
         return filteredEmployeesDto;
     }

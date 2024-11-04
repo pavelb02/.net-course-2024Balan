@@ -16,7 +16,11 @@ public class CurrencyStorage : ICurrencyStorage
     public async Task<Guid> GetAsync(string currencyCode)
     {
         var currency = await _dbContext.Currencies.FirstOrDefaultAsync(c => c.Code == currencyCode);
-        if (currency==null) throw new ArgumentException($"Валюта с кодом {currencyCode} не найдена.");
+        if (currency == null)
+        {
+            throw new ArgumentException($"Валюта с кодом {currencyCode} не найдена.");
+        }
+        
         return currency.Id;
     }
 
@@ -26,14 +30,20 @@ public class CurrencyStorage : ICurrencyStorage
         {
             throw new InvalidOperationException($"Валюта с кодом {currency.Code} уже существует.");
         }
+        
         _dbContext.Currencies.Add(currency);
+        
         await _dbContext.SaveChangesAsync();
     }
 
     public async Task DeleteAsync(string currencyCode)
     {
         var currency = await _dbContext.Currencies.FirstOrDefaultAsync(c => c.Code == currencyCode);
-        if (currency == null) return;
+        if (currency == null)
+        {
+            return;
+        }
+        
         _dbContext.Currencies.Remove(currency);
         await _dbContext.SaveChangesAsync();
     }

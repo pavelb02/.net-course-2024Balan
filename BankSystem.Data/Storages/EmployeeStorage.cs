@@ -15,7 +15,7 @@ public class EmployeeStorage : IStorage<Employee, SearchRequest>
         _dbContext = new BankSystemDbContext();
     }
     
-    public async Task<Guid> AddAsync(Employee employee)
+    public async Task<Guid> AddAsync(Employee employee, CancellationToken cancellationToken)
     {
         if (await _dbContext.Employees.AnyAsync(e => e.Id == employee.Id))
         {
@@ -28,14 +28,14 @@ public class EmployeeStorage : IStorage<Employee, SearchRequest>
         return employee.Id;
     }
 
-    public async Task<Employee> GetByIdAsync(Guid employeeId)
+    public async Task<Employee> GetByIdAsync(Guid employeeId, CancellationToken cancellationToken)
     {
         var employee = await _dbContext.Employees.FirstOrDefaultAsync(e => e.Id == employeeId);
         if (employee == null) throw new ArgumentException($"Сотрудник с Id {employeeId} не найден.");
         return employee;
     }
 
-    public async Task<List<Employee>> GetCollectionAsync(SearchRequest searchRequest)
+    public async Task<List<Employee>> GetCollectionAsync(SearchRequest searchRequest, CancellationToken cancellationToken)
     {
         IQueryable<Employee> request =  _dbContext.Employees;
         if (!string.IsNullOrWhiteSpace(searchRequest.Name))
@@ -77,7 +77,7 @@ public class EmployeeStorage : IStorage<Employee, SearchRequest>
         return await request.ToListAsync();
     }
 
-    public async Task<Guid> UpdateAsync(Employee employee)
+    public async Task<Guid> UpdateAsync(Employee employee, CancellationToken cancellationToken)
     {
         _dbContext.Entry(employee).State = EntityState.Modified;
         await _dbContext.SaveChangesAsync();
@@ -85,7 +85,7 @@ public class EmployeeStorage : IStorage<Employee, SearchRequest>
         return employee.Id;
     }
 
-    public async Task<Guid> DeleteAsync(Guid employeeId)
+    public async Task<Guid> DeleteAsync(Guid employeeId, CancellationToken cancellationToken)
     {
         var employee = await _dbContext.Employees.FirstOrDefaultAsync(e => e.Id == employeeId);
         if (employee == null) return Guid.Empty;
