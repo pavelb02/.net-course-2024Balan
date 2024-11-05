@@ -23,7 +23,9 @@ public class CurrencyService : ICurrencyService
         {
             var currency = new Currency(code, name, symbol, exchangeRate);
             if (await ValidateCurrencyAsync(currency))
+            {
                 await _currencyStorage.AddAsync(currency);
+            }
         }
         catch (Exception ex)
         {

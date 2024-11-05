@@ -1,5 +1,8 @@
+using AutoMapper;
+using BankSystem.App.Dto;
 using BankSystem.App.Exeptions;
 using BankSystem.App.Interfaces;
+using BankSystem.App.Mapping;
 using BankSystem.App.Services;
 using BankSystem.Data.Storages;
 using BankSystem.Domain.Models;
@@ -8,22 +11,29 @@ namespace BankSystem.App.Tests;
 
 public class EquivalenceTests
 {
-    TestDataGenerator testDataGenerator = new();
+    TestDataGenerator _testDataGenerator = new();
     private ClientStorage _clientStorage;
     private ClientService _clientService;
     private CurrencyService _currencyService;
     private EmployeeStorage _employeeStorage;
     private CurrencyStorage _currencyStorage;
     private EmployeeService _employeeService;
+    private IMapper _mapper;
 
     public EquivalenceTests()
     {
+        var mapperConfig = new MapperConfiguration(cfg =>
+        {
+            cfg.AddProfile<ClientProfile>(); 
+        });
+    
+        _mapper = mapperConfig.CreateMapper();
         _currencyStorage = new CurrencyStorage();
         _currencyService = new CurrencyService(_currencyStorage);
         _clientStorage = new ClientStorage();
-        _clientService = new ClientService(_clientStorage, _currencyService);
+        _clientService = new ClientService(_clientStorage, _currencyService, _mapper);
         _employeeStorage = new EmployeeStorage();
-        _employeeService = new EmployeeService(_employeeStorage);
+        _employeeService = new EmployeeService(_employeeStorage, _mapper);
     }
 
     string[] positions =
@@ -40,19 +50,20 @@ public class EquivalenceTests
     };
 
     private const string _defaultCurrencyCode = "USD";
+    CancellationToken cancellationToken = CancellationToken.None;
 
     [Fact]
     public void GetHashCodeNecessityPositiveTest()
     {
         //Arrange
-        var clientsBankList = testDataGenerator.GenerateClientsBankList(10);
+        var clientsBankListDto = _testDataGenerator.GenerateClientsBankList(10);
         var clientsBankDictionaryAccount =
-            testDataGenerator.GenerateClientsBankDictionaryAccount(clientsBankList, currencies);
+            _testDataGenerator.GenerateClientsBankDictionaryAccount(clientsBankListDto, currencies);
         var client = clientsBankDictionaryAccount.Keys.First();
-        var newClient = new Client(client.Name, client.Surname, client.NumPassport, client.Phone,
+        var newClient = new ClientDto(client.Name, client.Surname, client.NumPassport, client.Phone,
             client.DateBirthday);
         //Act
-        Account result = clientsBankDictionaryAccount[newClient];
+        AccountDto result = clientsBankDictionaryAccount[newClient];
         //Assert
         Assert.Equal(result, clientsBankDictionaryAccount[client]);
     }
@@ -61,12 +72,12 @@ public class EquivalenceTests
     public void GetHashCodeNecessityPositiveMultiAccountTest()
     {
         //Arrange
-        var clientsBankList = testDataGenerator.GenerateClientsBankList(10);
-        var clientsBankDictionaryAccount = testDataGenerator.GenerateClientsBankDictionaryMultiAccount(clientsBankList);
+        var clientsBankList = _testDataGenerator.GenerateClientsBankList(10);
+        var clientsBankDictionaryAccount = _testDataGenerator.GenerateClientsBankDictionaryMultiAccount(clientsBankList);
         var client = clientsBankDictionaryAccount.Keys.First();
-        var newClient = new Client(client.Name, client.Surname, client.NumPassport, client.Phone, client.DateBirthday);
+        var newClient = new ClientDto(client.Name, client.Surname, client.NumPassport, client.Phone, client.DateBirthday);
         //Act
-        Account[] result = clientsBankDictionaryAccount[newClient];
+        AccountDto[] result = clientsBankDictionaryAccount[newClient];
         //Assert
         Assert.Equal(result, clientsBankDictionaryAccount[client]);
     }
@@ -75,11 +86,10 @@ public class EquivalenceTests
     public void GetHashCodeNecessityPositiveListTest()
     {
         //Arrange
-        var employeesBankList = testDataGenerator.GenerateEmployeesBankList(10, positions);
+        var employeesBankList = _testDataGenerator.GenerateEmployeesBankList(10, positions);
         var employee = employeesBankList.First();
-        var newEmployee = new Employee(employee.Name, employee.Surname, employee.NumPassport,
-            employee.Phone,
-            employee.Position, employee.StartDate, employee.Salary, employee.DateBirthday);
+        var newEmployee = new EmployeeDto(employee.Name, employee.Surname, employee.NumPassport,
+            employee.Phone, employee.Position, employee.StartDate, employee.Salary, employee.DateBirthday);
         //Act
         bool result = employeesBankList.Contains(newEmployee);
         //Assert
@@ -90,14 +100,15 @@ public class EquivalenceTests
     public async Task AddClientAsyncPositiveListTest()
     {
         //Arrange
-        var clientsBankList = testDataGenerator.GenerateClientsBankList(13);
-        foreach (var client in clientsBankList)
+        var clientsBankList = _testDataGenerator.GenerateClientsBankList(13);
+        var clientsBankListDto = _mapper.Map<List<ClientDto>>(clientsBankList);
+        foreach (var client in clientsBankListDto)
         {
-            await _clientService.AddClientAsync(client, _defaultCurrencyCode);
+            await _clientService.AddClientAsync(client, _defaultCurrencyCode, cancellationToken);
         }
 
         //Act
-        var clientOne = await _clientStorage.GetCollectionAsync(new SearchRequest{NumPassport = clientsBankList.First().NumPassport});
+        var clientOne = await _clientService.FilterClientsAsync(new SearchRequest{NumPassport = clientsBankList.First().NumPassport}, cancellationToken);
         //Assert
         Assert.Equal(clientsBankList.First(), clientOne.First());
     }
@@ -106,15 +117,16 @@ public class EquivalenceTests
     public async Task DeleteAllClientsAsyncPositiveListTest()
     {
         //Arrange
-        var clientsBankList = await _clientService.FilterClientsAsync(new SearchRequest ());
+        var clientsBankListDto = await _clientService.FilterClientsAsync(new SearchRequest (), cancellationToken);
+        var clientsBankList = _mapper.Map<List<Client>>(clientsBankListDto);
         //Act
         foreach (var client in clientsBankList)
         {
-            await _clientService.DeleteClientAsync(client.Id);
+            await _clientService.DeleteClientAsync(client.Id, cancellationToken);
         }
         
         //Assert
-        var clientsBankListNow = await _clientService.FilterClientsAsync(new SearchRequest ());
+        var clientsBankListNow = await _clientService.FilterClientsAsync(new SearchRequest (), cancellationToken);
         Assert.Equal(0, clientsBankListNow.Count);
     }
 
@@ -122,13 +134,14 @@ public class EquivalenceTests
     public async Task AddClientAsyncNegativeListTest()
     {
         //Arrange
-        var clientsBankList = testDataGenerator.GenerateClientsBankList(1);
+        var clientsBankList = _testDataGenerator.GenerateClientsBankList(1);
         clientsBankList.First().Name = "";
+        var clientDto = _mapper.Map<ClientDto>(clientsBankList.First());
         //Act
-        await _clientService.AddClientAsync(clientsBankList.First(), _defaultCurrencyCode);
+        await _clientService.AddClientAsync(clientDto, _defaultCurrencyCode, cancellationToken);
         //Assert
         await Assert.ThrowsAsync<Exception>(async () =>
-            await _clientService.AddClientAsync(clientsBankList.First(), _defaultCurrencyCode));
+            await _clientService.AddClientAsync(clientDto, _defaultCurrencyCode, cancellationToken));
 
     }
 
@@ -136,12 +149,14 @@ public class EquivalenceTests
     public async Task AddAccountAsyncPositiveTest()
     {
         //Arrange
-        var clientsBankList = testDataGenerator.GenerateClientsBankList(1);
-        await _clientService.AddClientAsync(clientsBankList.First(), _defaultCurrencyCode);
-        await _clientService.AddAccountAsync(clientsBankList.First().Id, "USD");
+        var clientsBankList = _testDataGenerator.GenerateClientsBankList(1);
+        var clientDto = _mapper.Map<ClientDto>(clientsBankList.First());
+        await _clientService.AddClientAsync(clientDto, _defaultCurrencyCode, cancellationToken);
+        await _clientService.AddAccountAsync(clientsBankList.First().Id, "USD", cancellationToken);
         //Act
-        var clients = await _clientService.GetClientAsync(clientsBankList.First().Id);
-        var result = clients.AccountsClient.Count;
+        var clientsDto = await _clientService.GetClientAsync(clientsBankList.First().Id, cancellationToken);
+        var clients = _mapper.Map<List<Client>>(clientsDto);
+        var result = clients.First().AccountsClient.Count;
         //Assert
         Assert.Equal(1, result);
     }
@@ -150,18 +165,19 @@ public class EquivalenceTests
     public async Task UpdateClientAsyncPositiveTest()
     {
         //Arrange
-        var clientsBankList = testDataGenerator.GenerateClientsBankList(1);
-        await _clientService.AddClientAsync(clientsBankList.First(), _defaultCurrencyCode);
-        var newClient = new Client(clientsBankList.First().Id)
+        var clientsBankList = _testDataGenerator.GenerateClientsBankList(1);
+        var clientDto = _mapper.Map<ClientDto>(clientsBankList.First());
+        await _clientService.AddClientAsync(clientDto, _defaultCurrencyCode, cancellationToken);
+        var newClient = new ClientDto
         {
             Name = "Pavlik",
             Surname = "Balan",
             Phone = "+37368523915",
-            NumPassport = "545464546"
+            NumPassport = "545464546",
         };
-        await _clientService.UpdateClientAsync(clientsBankList.First().Id, newClient);
+        await _clientService.UpdateClientAsync(clientsBankList.First().Id, newClient, cancellationToken);
         //Act
-        var result = await _clientService.GetClientAsync(clientsBankList.First().Id);
+        var result = await _clientService.GetClientAsync(clientsBankList.First().Id, cancellationToken);
         //Assert
         Assert.Equal(result, newClient);
     }
@@ -170,11 +186,12 @@ public class EquivalenceTests
     public async Task FilterClientAsyncPositiveTest()
     {
         //Arrange
-        var clientsBankList = testDataGenerator.GenerateClientsBankList(1);
-        await _clientService.AddClientAsync(clientsBankList.First(), _defaultCurrencyCode);
+        var clientsBankList = _testDataGenerator.GenerateClientsBankList(1);
+        var clientDto = _mapper.Map<ClientDto>(clientsBankList.First());
+        await _clientService.AddClientAsync(clientDto, _defaultCurrencyCode, cancellationToken);
         var searchRequest = new SearchRequest { NumPassport = clientsBankList[0].NumPassport };
         //Act
-        var filteredClients = await _clientService.FilterClientsAsync(searchRequest);
+        var filteredClients = await _clientService.FilterClientsAsync(searchRequest, cancellationToken);
         // Assert
         Assert.Single(filteredClients);
         Assert.Equal(clientsBankList[0].NumPassport, filteredClients.First().NumPassport);
@@ -190,7 +207,8 @@ public class EquivalenceTests
         var currencyCode = "USD";
 
         var currencyId = await _currencyService.GetCurrencyAsync(currencyCode);
-        var clientBefore = await _clientService.FilterClientsAsync(new SearchRequest { PageNumber = 1, PageSize = 1 });
+        var clientBeforeDto = await _clientService.FilterClientsAsync(new SearchRequest { PageNumber = 1, PageSize = 1 }, cancellationToken);
+        var clientBefore = _mapper.Map<List<Client>>(clientBeforeDto);
         var amountBefore = clientBefore.First().AccountsClient.FirstOrDefault(a => a.CurrencyId == currencyId)!.Amount;
         
         for (int i = 0; i < iterationCount; i++)
@@ -200,7 +218,7 @@ public class EquivalenceTests
             while (flag)
             {
                 var clients = await _clientStorage.GetCollectionAsync(new SearchRequest
-                    { PageSize = pageSize, PageNumber = pageNumber });
+                    { PageSize = pageSize, PageNumber = pageNumber }, cancellationToken);
                 if (clients.Count < pageSize)
                     flag = false;
 
@@ -211,7 +229,7 @@ public class EquivalenceTests
                         ClientId = client.Id,
                         WithdrawalAmount = withdrawalAmount,
                         CurrencyCode = currencyCode
-                    });
+                    }, cancellationToken);
 
                     await task; 
                 }
@@ -221,7 +239,8 @@ public class EquivalenceTests
         }
 
         // Assert
-        var clientAfter = await _clientService.FilterClientsAsync(new SearchRequest { PageNumber = 1, PageSize = 1 });
+        var clientAfterDto = await _clientService.FilterClientsAsync(new SearchRequest { PageNumber = 1, PageSize = 1 }, cancellationToken);
+        var clientAfter = _mapper.Map<List<Client>>(clientAfterDto);
         var amountAfter = clientAfter.First().AccountsClient.FirstOrDefault(a => a.CurrencyId == currencyId);
         Assert.Equal(amountBefore - iterationCount * withdrawalAmount, amountAfter.Amount);
     }
@@ -230,36 +249,43 @@ public class EquivalenceTests
     public async Task AddEmployeeAsyncPositiveListTest()
     {
         //Arrange
-        var employeesBankList = testDataGenerator.GenerateEmployeesBankList(3, positions);
-        await _employeeService.AddEmployeesAsync(employeesBankList);
+        var employeesBankListDto = _testDataGenerator.GenerateEmployeesBankList(3, positions);
+        foreach (var employeeDto in employeesBankListDto)
+        {
+            await _employeeService.AddEmployeeAsync(employeeDto, cancellationToken);
+        }
+        var employee = _mapper.Map<Employee>(employeesBankListDto.First());
         //Act
-        var employee = await _employeeStorage.GetCollectionAsync(new SearchRequest());
+        var employeeFromBd = await _employeeStorage.GetCollectionAsync(new SearchRequest {NumPassport = employee.NumPassport}, cancellationToken);
         //Assert
-        Assert.Equal(employee, employeesBankList);
+        Assert.Equal(employee, employeeFromBd.First());
     }
 
     [Fact]
     public async Task FilterEmployeeAsyncPositiveTest()
     {
         //Arrange
-        var employeesBankList = testDataGenerator.GenerateEmployeesBankList(10, positions);
-        await _employeeService.AddEmployeesAsync(employeesBankList);
-        var searchRequest = new SearchRequest { Name = employeesBankList[0].Name };
+        var employeesBankListDto = _testDataGenerator.GenerateEmployeesBankList(3, positions);
+        foreach (var employeeDto in employeesBankListDto)
+        {
+            await _employeeService.AddEmployeeAsync(employeeDto, cancellationToken);
+        }
+        var searchRequest = new SearchRequest { NumPassport = employeesBankListDto[0].NumPassport };
         //Act
-        var filteredEmployees = await _employeeService.FilterEmployeesAsync(searchRequest);
+        var filteredEmployeesDto = await _employeeService.FilterEmployeesAsync(searchRequest, cancellationToken);
         //Assert
-        Assert.Equal(employeesBankList[0].NumPassport, filteredEmployees.First().NumPassport);
+        Assert.Equal(employeesBankListDto[0].NumPassport, filteredEmployeesDto.First().NumPassport);
     }
 
     [Fact]
     public async Task DeleteEmployeeAsyncPositiveListTest()
     {
         //Arrange
-        var employeesBankList = await _employeeService.FilterEmployeesAsync(new SearchRequest { });
+        var employeesBankList = await _employeeService.FilterEmployeesAsync(new SearchRequest { }, cancellationToken);
         //Act
-        await _employeeService.DeleteEmployeeAsync(employeesBankList.First().Id);
+        await _employeeService.DeleteEmployeeAsync(employeesBankList.First().Id, cancellationToken);
         //Assert
         await Assert.ThrowsAsync<ArgumentException>(async () =>
-            await _employeeStorage.GetByIdAsync(employeesBankList.First().Id));
+            await _employeeStorage.GetByIdAsync(employeesBankList.First().Id, cancellationToken));
     }
 }

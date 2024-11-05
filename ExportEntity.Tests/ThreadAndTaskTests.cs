@@ -3,6 +3,7 @@ using BankSystem.App.Services;
 using BankSystem.Domain.Models;
 using System.Text.Json;
 using System.Threading;
+using BankSystem.App.Dto;
 using CsvHelper;
 
 namespace ExportEntity.Tests;
@@ -23,7 +24,7 @@ public class ThreadAndTaskTests
         var countFile = 0;
         var countThread = 5;
         var countClients = 10;
-        var clientsFromFile = new List<Client>();
+        var clientsFromFile = new List<ClientDto>();
 
         //Act
         for (int i = 1; i <= countThread; i++)
@@ -46,7 +47,7 @@ public class ThreadAndTaskTests
             using (var csvReader = new CsvReader(streamReader, CultureInfo.InvariantCulture))
             {
 
-                clientsFromFile.AddRange(csvReader.GetRecords<Client>().ToList());
+                clientsFromFile.AddRange(csvReader.GetRecords<ClientDto>().ToList());
             }
         }
 
@@ -54,7 +55,7 @@ public class ThreadAndTaskTests
 
         void Serialize(object state)
         {
-            List<Client> clientsList = _testDataGenerator.GenerateClientsBankList(countClients);
+            List<ClientDto> clientsList = _testDataGenerator.GenerateClientsBankList(countClients);
 
             foreach (var client in clientsList)
             {
@@ -70,7 +71,7 @@ public class ThreadAndTaskTests
                         using (var streamWriter = new StreamWriter(fileStream))
                         using (var writer = new CsvWriter(streamWriter, CultureInfo.InvariantCulture))
                         {
-                            writer.WriteHeader<Client>();
+                            writer.WriteHeader<ClientDto>();
                             writer.NextRecord();
                         }
 

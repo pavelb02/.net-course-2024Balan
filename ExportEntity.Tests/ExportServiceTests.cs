@@ -1,4 +1,7 @@
-﻿using BankSystem.App.Services;
+﻿using AutoMapper;
+using BankSystem.App.Dto;
+using BankSystem.App.Mapping;
+using BankSystem.App.Services;
 using BankSystem.Data.Storages;
 using BankSystem.Domain.Models;
 
@@ -8,22 +11,30 @@ public class ExportServiceTests
 {
     private EmployeeService _employeeService;
     private ClientService _clientService;
+    private IMapper _mapper;
+    CancellationToken cancellationToken = CancellationToken.None;
 
     public ExportServiceTests()
     {
+        var mapperConfig = new MapperConfiguration(cfg =>
+        {
+            cfg.AddProfile<ClientProfile>(); 
+        });
+    
+        _mapper = mapperConfig.CreateMapper();
         var employeeStorage = new EmployeeStorage();
-        _employeeService = new EmployeeService(employeeStorage);
+        _employeeService = new EmployeeService(employeeStorage, _mapper);
         var currencyStorage = new CurrencyStorage();
         var currencyService = new CurrencyService(currencyStorage);
         var clientStorage = new ClientStorage();
-        _clientService = new ClientService(clientStorage, currencyService);
+        _clientService = new ClientService(clientStorage, currencyService, _mapper);
     }
     
     [Fact]
     public async Task WriteClientsToCsvAndReadFromDbTest()
     {
         //Arrange
-        List<Client> clientsFromDb = new (await _clientService.FilterClientsAsync(new SearchRequest()));
+        List<Client> clientsFromDb = new (_mapper.Map<List<Client>>(await _clientService.FilterClientsAsync(new SearchRequest(), cancellationToken)));
         string pathToDirectory = Path.Combine("D:", "Программирование","Dex backend 2024", "Practice",".net-course-2024Balan", "Tool");
         string fileName = "clientsCsv.csv";
         ExportService<Client> exportService = new ExportService<Client>(pathToDirectory, fileName);
@@ -44,16 +55,17 @@ public class ExportServiceTests
         string fileName = "clientsCsv.csv";
         ExportService<Client> exportService = new ExportService<Client>(pathToDirectory, fileName);
         List<Client> clientsFromFile = exportService.ReadItemsFromCsv();
+        var clientsFromFileDto = _mapper.Map<List<ClientDto>>(clientsFromFile);
         
         //Act
-        foreach (var client in clientsFromFile)
+        foreach (var client in clientsFromFileDto)
         {
-            await _clientService.AddClientAsync(client, "USD");
+            await _clientService.AddClientAsync(client, "USD", cancellationToken);
         }
         List<Client> clientsFromDb = new List<Client>();
         foreach (var client in clientsFromFile)
         {
-            clientsFromDb.Add(await _clientService.GetClientAsync(client.Id));
+            clientsFromDb.Add(_mapper.Map<Client>(await _clientService.GetClientAsync(client.Id, cancellationToken)));
         }
 
         //Assert
@@ -64,7 +76,8 @@ public class ExportServiceTests
     public async Task WriteClientsToJsonAndReadClientsFromJsonTest()
     {
         //Arrange
-        List<Client> clientsFromDb = new (await _clientService.FilterClientsAsync(new SearchRequest()));
+        List<ClientDto> clientsFromDbDto = new (await _clientService.FilterClientsAsync(new SearchRequest(), cancellationToken));
+        var clientsFromDb = _mapper.Map<List<Client>>(clientsFromDbDto);
         var pathToDirectory = Path.Combine("D:", "Программирование", "Dex backend 2024", "Practice", ".net-course-2024Balan", "Tool");
         var fileName = "clientsJson.json";
         var fullPath = Path.Combine(pathToDirectory, fileName);
@@ -82,7 +95,8 @@ public class ExportServiceTests
     public async Task WriteClientToJsonAndReadClientFromJsonTest()
     {
         //Arrange
-        List<Client> clientsFromDb = new (await _clientService.FilterClientsAsync(new SearchRequest()));
+        List<ClientDto> clientsFromDbDto = new (await _clientService.FilterClientsAsync(new SearchRequest(), cancellationToken));
+        var clientsFromDb = _mapper.Map<List<Client>>(clientsFromDbDto);
         var pathToDirectory = Path.Combine("D:", "Программирование", "Dex backend 2024", "Practice", ".net-course-2024Balan", "Tool");
         var fileName = "clientJson.json";
         var fullPath = Path.Combine(pathToDirectory, fileName);
@@ -100,7 +114,8 @@ public class ExportServiceTests
     public async Task WriteEmployeesToCsvAndReadFromDbTest()
     {
         //Arrange
-        List<Employee> employeesFromDb = new (await _employeeService.FilterEmployeesAsync(new SearchRequest {PageSize = 5, PageNumber = 1}));
+        List<EmployeeDto> employeesFromDbDto = new (await _employeeService.FilterEmployeesAsync(new SearchRequest {PageSize = 5, PageNumber = 1}, cancellationToken));
+        var employeesFromDb = _mapper.Map<List<Employee>>(employeesFromDbDto);
         var pathToDirectory = Path.Combine("D:", "Программирование","Dex backend 2024", "Practice",".net-course-2024Balan", "Tool");
         var fileName = "employeesCsv.csv";
         ExportService<Employee> exportService = new ExportService<Employee>(pathToDirectory, fileName);
@@ -121,24 +136,29 @@ public class ExportServiceTests
         var fileName = "employeesCsv.csv";
         ExportService<Employee> exportService = new ExportService<Employee>(pathToDirectory, fileName);
         var employeesFromFile = exportService.ReadItemsFromCsv();
+        var employeesFromFileDto = _mapper.Map<List<EmployeeDto>>(employeesFromFile);
         
         //Act
-        await _employeeService.AddEmployeesAsync(employeesFromFile);
-        var employeesFromDb = new List<Employee>();
+        foreach (var employeeDto in employeesFromFileDto)
+        {
+            await _employeeService.AddEmployeeAsync(employeeDto, cancellationToken);
+        }
+        var employeesFromDbDto = new List<EmployeeDto>();
         foreach (var employee in employeesFromFile)
         {
-            employeesFromDb.Add(await _employeeService.GetEmployeeAsync(employee.Id));
+            employeesFromDbDto.Add(await _employeeService.GetEmployeeAsync(employee.Id, cancellationToken));
         }
 
         //Assert
-        Assert.Equal(employeesFromFile, employeesFromDb);
+        Assert.Equal(employeesFromFileDto, employeesFromDbDto);
     }
     
     [Fact]
     public async Task WriteEmployeesToJsonAndReadEmployeesFromJsonTest()
     {
         //Arrange
-        List<Employee> employeesFromDb = new (await _employeeService.FilterEmployeesAsync(new SearchRequest{PageSize = 3, PageNumber = 1}));
+        List<EmployeeDto> employeesFromDbDto = new (await _employeeService.FilterEmployeesAsync(new SearchRequest{PageSize = 3, PageNumber = 1}, cancellationToken));
+        var employeesFromDb = _mapper.Map<List<Employee>>(employeesFromDbDto);
         var pathToDirectory = Path.Combine("D:", "Программирование", "Dex backend 2024", "Practice", ".net-course-2024Balan", "Tool");
         var fileName = "employeesJson.json";
         var fullPath = Path.Combine(pathToDirectory, fileName);
@@ -156,7 +176,8 @@ public class ExportServiceTests
     public async Task WriteEmployeeToJsonAndReadEmployeeFromJsonTest()
     {
         //Arrange
-        List<Employee> employeesFromDb = new (await _employeeService.FilterEmployeesAsync(new SearchRequest{PageSize = 3, PageNumber = 1}));
+        List<EmployeeDto> employeesFromDbDto = new (await _employeeService.FilterEmployeesAsync(new SearchRequest{PageSize = 3, PageNumber = 1}, cancellationToken));
+        var employeesFromDb = _mapper.Map<List<Employee>>(employeesFromDbDto);
         var pathToDirectory = Path.Combine("D:", "Программирование", "Dex backend 2024", "Practice", ".net-course-2024Balan", "Tool");
         var fileName = "employeeJson.json";
         var fullPath = Path.Combine(pathToDirectory, fileName);

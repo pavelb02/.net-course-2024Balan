@@ -12,20 +12,20 @@ public class RateUpdater
         _clientStorage = clientStorage;
     }
 
-    public async Task ChargeInterestAsync(decimal interest, CancellationToken token)
+    public async Task ChargeInterestAsync(decimal interest, CancellationToken cancellationToken)
     {
         var pageSize = 5;
         
-        while (!token.IsCancellationRequested)
+        while (!cancellationToken.IsCancellationRequested)
         {
             var pageNumber = 1;
             
             while (true)
             {
                 var clients = await _clientStorage.GetCollectionAsync(new SearchRequest
-                    { PageSize = pageSize, PageNumber = pageNumber });
+                    { PageSize = pageSize, PageNumber = pageNumber }, cancellationToken);
                 
-                if (token.IsCancellationRequested)
+                if (cancellationToken.IsCancellationRequested)
                 {
                     Console.WriteLine("Операция прервана");
                     return;
@@ -38,7 +38,7 @@ public class RateUpdater
                         account.Amount += account.Amount * interest;
                     }
 
-                    await _clientStorage.UpdateAsync(client.Id, client);
+                    await _clientStorage.UpdateAsync(client, cancellationToken);
                 }
 
                 pageNumber++;
@@ -51,7 +51,7 @@ public class RateUpdater
             var nextMonth = new DateTime(dateNow.Year, dateNow.Month, 1).AddMonths(1);
             var delay = nextMonth - dateNow;
 
-            await Task.Delay(delay, token);
+            await Task.Delay(delay, cancellationToken);
         }
     }
 }
