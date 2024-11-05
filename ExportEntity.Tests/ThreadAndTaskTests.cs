@@ -136,26 +136,4 @@ public class ThreadAndTaskTests
             }
         }
     }
-
-    [Fact]
-    public void Test7()
-    {
-        Console.WriteLine("1");
-        Print1();
-        Console.WriteLine("2");
-    }
-
-    private async Task Print1()
-    {
-        Console.WriteLine("3");
-        await Print2();
-        Console.WriteLine("4");
-    }
-
-    private async Task Print2()
-    {
-        Console.WriteLine("5");
-        Task.Delay(1000);
-        Console.WriteLine("6");
-    }
 }
