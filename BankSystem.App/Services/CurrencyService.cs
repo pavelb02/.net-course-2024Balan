@@ -1,31 +1,39 @@
-﻿using BankSystem.App.Exeptions;
+﻿using AutoMapper;
+using BankSystem.App.Dto;
 using BankSystem.App.Interfaces;
 using BankSystem.Domain.Models;
+using Newtonsoft.Json;
 
 namespace BankSystem.App.Services;
 
 public class CurrencyService : ICurrencyService
 {
     private ICurrencyStorage _currencyStorage;
+    private IMapper _mapper;
 
-    public CurrencyService(ICurrencyStorage currencyStorage)
+    public CurrencyService(ICurrencyStorage currencyStorage, IMapper mapper)
     {
         _currencyStorage = currencyStorage;
+        _mapper = mapper;
     }
-    public async Task<Guid> GetCurrencyAsync(string currencyCode)
+    public async Task<Guid> GetCurrencyAsync(string currencyCode, CancellationToken cancellationToken)
     {
-        return await _currencyStorage.GetAsync(currencyCode);
+        return await _currencyStorage.GetAsync(currencyCode, cancellationToken);
     }
 
-    public async Task AddCurrencyAsync(string code, string name, string symbol, decimal exchangeRate)
+    public async Task<string> AddCurrencyAsync(CurrencyDto currencyDto, CancellationToken cancellationToken)
     {
         try
         {
-            var currency = new Currency(code, name, symbol, exchangeRate);
-            if (await ValidateCurrencyAsync(currency))
+            if (!await ValidateCurrencyAsync(currencyDto))
             {
-                await _currencyStorage.AddAsync(currency);
+                return "---";
             }
+
+            var currency = _mapper.Map<Currency>(currencyDto);
+            var addedCurrencyCode = await _currencyStorage.AddAsync(currency, cancellationToken);
+            
+            return addedCurrencyCode;
         }
         catch (Exception ex)
         {
@@ -34,11 +42,36 @@ public class CurrencyService : ICurrencyService
         }
     }
 
-    public async Task DeleteGurrencyAsync(string currencyCode)
+    public async Task<string> DeleteCurrencyAsync(string currencyCode, CancellationToken cancellationToken)
     {
-        await _currencyStorage.DeleteAsync(currencyCode);
+        var deletedCurrencyCode = await _currencyStorage.DeleteAsync(currencyCode, cancellationToken);
+        return deletedCurrencyCode;
     }
-    private static Task<bool> ValidateCurrencyAsync(Currency currency)
+
+    public async Task<decimal> CurrencyConversionAsync(ConversionCurrencyRequest conversionCurrencyRequest, CancellationToken cancellationToken)
+    {
+        var apiKey = "Agzu92FAcSfiRD5su5AS3etFazvf3L";
+        using (var client = new HttpClient())
+        {
+            HttpResponseMessage responseMessage = await client.GetAsync(
+                $"https://www.amdoren.com/api/currency.php?api_key={apiKey}&from={conversionCurrencyRequest.CurrencyFrom}&to={conversionCurrencyRequest.CurrencyTo}&amount={conversionCurrencyRequest.Amount}");
+            
+            responseMessage.EnsureSuccessStatusCode();
+
+            string message = await responseMessage.Content.ReadAsStringAsync();
+            
+            var response = JsonConvert.DeserializeObject<CurrencyResponse>(message);
+            
+            if (response.Error != 0)
+            {
+                throw new Exception($"Error in currency conversion: {response.ErrorMessage}");
+            }
+
+            return response.Amount;
+        }
+    }
+
+    private static Task<bool> ValidateCurrencyAsync(CurrencyDto currency)
     {
         if (string.IsNullOrWhiteSpace(currency.Code) || string.IsNullOrWhiteSpace(currency.Name) || string.IsNullOrWhiteSpace(currency.Symbol))
         {

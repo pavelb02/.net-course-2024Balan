@@ -29,7 +29,7 @@ public class EquivalenceTests
     
         _mapper = mapperConfig.CreateMapper();
         _currencyStorage = new CurrencyStorage();
-        _currencyService = new CurrencyService(_currencyStorage);
+        _currencyService = new CurrencyService(_currencyStorage, _mapper);
         _clientStorage = new ClientStorage();
         _clientService = new ClientService(_clientStorage, _currencyService, _mapper);
         _employeeStorage = new EmployeeStorage();
@@ -206,7 +206,7 @@ public class EquivalenceTests
         var withdrawalAmount = 10;
         var currencyCode = "USD";
 
-        var currencyId = await _currencyService.GetCurrencyAsync(currencyCode);
+        var currencyId = await _currencyService.GetCurrencyAsync(currencyCode, cancellationToken);
         var clientBeforeDto = await _clientService.FilterClientsAsync(new SearchRequest { PageNumber = 1, PageSize = 1 }, cancellationToken);
         var clientBefore = _mapper.Map<List<Client>>(clientBeforeDto);
         var amountBefore = clientBefore.First().AccountsClient.FirstOrDefault(a => a.CurrencyId == currencyId)!.Amount;
