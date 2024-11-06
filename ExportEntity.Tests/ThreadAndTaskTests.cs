@@ -5,6 +5,7 @@ using System.Text.Json;
 using System.Threading;
 using BankSystem.App.Dto;
 using CsvHelper;
+using Microsoft.EntityFrameworkCore.Query;
 
 namespace ExportEntity.Tests;
 
@@ -46,7 +47,6 @@ public class ThreadAndTaskTests
             using (var streamReader = new StreamReader(fileStream))
             using (var csvReader = new CsvReader(streamReader, CultureInfo.InvariantCulture))
             {
-
                 clientsFromFile.AddRange(csvReader.GetRecords<ClientDto>().ToList());
             }
         }
@@ -97,11 +97,12 @@ public class ThreadAndTaskTests
                         }
                     }
                 }
+
                 Thread.Sleep(10);
             }
         }
     }
-    
+
     [Fact]
     public void AddMoneyToAccountThreadsTest()
     {
@@ -116,7 +117,7 @@ public class ThreadAndTaskTests
             myThread.Name = $"Поток {i}";
             myThread.Start();
         }
-        
+
         Thread.Sleep(1000);
         //Assert
         Assert.Equal(2000, account.Amount);
@@ -128,8 +129,9 @@ public class ThreadAndTaskTests
                 lock (locker)
                 {
                     account.Amount += 100;
-                    Console.WriteLine($"{Thread.CurrentThread.Name}: добавил 100");  
+                    Console.WriteLine($"{Thread.CurrentThread.Name}: добавил 100");
                 }
+
                 Thread.Sleep(10);
             }
         }

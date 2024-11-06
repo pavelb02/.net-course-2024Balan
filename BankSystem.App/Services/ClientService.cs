@@ -47,7 +47,7 @@ public class ClientService : IClientService
                 return Guid.Empty;
             }
             
-            var currencyId = await _currencyService.GetCurrencyAsync(currencyCode);
+            var currencyId = await _currencyService.GetCurrencyAsync(currencyCode, cancellationToken);
             var account = new Account(clientDto.Id, currencyId);
             clientDto.AccountsClient.Add(account);
             
@@ -71,7 +71,7 @@ public class ClientService : IClientService
         try
         {
             var client = await _clientStorage.GetByIdAsync(clientId, cancellationToken);
-            var currencyId = await _currencyService.GetCurrencyAsync(currencyCode);
+            var currencyId = await _currencyService.GetCurrencyAsync(currencyCode, cancellationToken);
             var account = new Account(client.Id, currencyId);
             
             var accountId = await _clientStorage.AddAccountAsync(clientId, account, cancellationToken);
@@ -145,7 +145,7 @@ public class ClientService : IClientService
     public async Task<bool> Debit(WithdrawalRequest withdrawalRequest, CancellationToken cancellationToken)
     {
         var client = await _clientStorage.GetByIdAsync(withdrawalRequest.ClientId, cancellationToken);
-        var currencyId = await _currencyService.GetCurrencyAsync(withdrawalRequest.CurrencyCode);
+        var currencyId = await _currencyService.GetCurrencyAsync(withdrawalRequest.CurrencyCode, cancellationToken);
         var account = client.AccountsClient.FirstOrDefault(a => a.CurrencyId == currencyId);
         
         if (account == null)

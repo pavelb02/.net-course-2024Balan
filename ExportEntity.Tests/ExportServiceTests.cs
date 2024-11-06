@@ -25,7 +25,7 @@ public class ExportServiceTests
         var employeeStorage = new EmployeeStorage();
         _employeeService = new EmployeeService(employeeStorage, _mapper);
         var currencyStorage = new CurrencyStorage();
-        var currencyService = new CurrencyService(currencyStorage);
+        var currencyService = new CurrencyService(currencyStorage, _mapper);
         var clientStorage = new ClientStorage();
         _clientService = new ClientService(clientStorage, currencyService, _mapper);
     }

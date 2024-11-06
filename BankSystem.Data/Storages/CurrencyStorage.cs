@@ -13,7 +13,7 @@ public class CurrencyStorage : ICurrencyStorage
         _dbContext = new BankSystemDbContext();
     }
 
-    public async Task<Guid> GetAsync(string currencyCode)
+    public async Task<Guid> GetAsync(string currencyCode, CancellationToken cancellationToken)
     {
         var currency = await _dbContext.Currencies.FirstOrDefaultAsync(c => c.Code == currencyCode);
         if (currency == null)
@@ -24,7 +24,7 @@ public class CurrencyStorage : ICurrencyStorage
         return currency.Id;
     }
 
-    public async Task AddAsync(Currency currency)
+    public async Task<string> AddAsync(Currency currency, CancellationToken cancellationToken)
     {
         if (await _dbContext.Currencies.AnyAsync(c => c.Code == currency.Code))
         {
@@ -34,17 +34,21 @@ public class CurrencyStorage : ICurrencyStorage
         _dbContext.Currencies.Add(currency);
         
         await _dbContext.SaveChangesAsync();
+        
+        return currency.Code;
     }
 
-    public async Task DeleteAsync(string currencyCode)
+    public async Task<string> DeleteAsync(string currencyCode, CancellationToken cancellationToken)
     {
         var currency = await _dbContext.Currencies.FirstOrDefaultAsync(c => c.Code == currencyCode);
         if (currency == null)
         {
-            return;
+            return "---";
         }
         
         _dbContext.Currencies.Remove(currency);
         await _dbContext.SaveChangesAsync();
+
+        return currencyCode;
     }
 }
